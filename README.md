@@ -3,6 +3,16 @@
 参照 [eprendre/tingshu](https://github.com/eprendre/tingshu) 的自定义源机制，用 WPF 编写的 Windows 听书程序。
 本程序只是播放器，不提供任何内容，所有音频都来自第三方网站，请支持正版。
 
+## 界面预览
+
+**发现**：按源浏览分类，一键切换听书源
+
+![发现](docs/images/discover.webp)
+
+**聚合搜索**：多个源同时搜索，按源筛选结果
+
+![聚合搜索](docs/images/search.webp)
+
 ## 功能
 
 - **通用插件**：程序本身不带任何源，所有源都来自导入的 **DLL 插件**
