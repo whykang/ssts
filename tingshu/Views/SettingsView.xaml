@@ -1,0 +1,180 @@
+<UserControl x:Class="tingshu.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:tingshu.Controls">
+    <UserControl.Resources>
+        <Style x:Key="Section" TargetType="TextBlock" BasedOn="{StaticResource T.Subtitle}">
+            <Setter Property="Margin" Value="4,26,0,10"/>
+        </Style>
+        <Style x:Key="SettingRow" TargetType="DockPanel">
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="MinHeight" Value="56"/>
+        </Style>
+        <Style x:Key="RowDivider" TargetType="Border">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource B.Border}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,4,32,40" MaxWidth="960" HorizontalAlignment="Left">
+            <TextBlock Text="设置" Style="{StaticResource T.Display}"/>
+
+            <!-- 外观 -->
+            <TextBlock Text="外观" Style="{StaticResource Section}"/>
+            <Border Style="{StaticResource Card}" Padding="18,4">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <Border DockPanel.Dock="Right" Background="{DynamicResource B.SurfaceAlt}" CornerRadius="9" Padding="2" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Style="{StaticResource Segment}" Content="跟随系统" GroupName="theme"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=System}"/>
+                                <RadioButton Style="{StaticResource Segment}" Content="浅色" GroupName="theme"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Light}"/>
+                                <RadioButton Style="{StaticResource Segment}" Content="深色" GroupName="theme"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Dark}"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="主题" Style="{StaticResource T.Body}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}"/>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding Accents}" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <RadioButton GroupName="accent" Margin="4,0" Cursor="Hand" ToolTip="{Binding}"
+                                                 Command="{Binding DataContext.SetAccentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 CommandParameter="{Binding}">
+                                        <RadioButton.IsChecked>
+                                            <MultiBinding Converter="{StaticResource MultiEquals}" Mode="OneWay">
+                                                <Binding/>
+                                                <Binding Path="DataContext.Accent" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                            </MultiBinding>
+                                        </RadioButton.IsChecked>
+                                        <RadioButton.Template>
+                                            <ControlTemplate TargetType="RadioButton">
+                                                <Grid Width="28" Height="28">
+                                                    <Ellipse x:Name="ring" Stroke="{DynamicResource B.Text}" StrokeThickness="2" Opacity="0"/>
+                                                    <Ellipse Margin="4" Fill="{Binding}"/>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="ring" Property="Opacity" Value="0.8"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ring" Property="Opacity" Value="0.4"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </RadioButton.Template>
+                                    </RadioButton>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="主题色" Style="{StaticResource T.Body}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 播放 -->
+            <TextBlock Text="播放" Style="{StaticResource Section}"/>
+            <Border Style="{StaticResource Card}" Padding="18,4">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <ComboBox DockPanel.Dock="Right" Width="120" VerticalAlignment="Center" ItemsSource="{Binding Speeds}" SelectedItem="{Binding DefaultSpeed}"
+                                  ItemStringFormat="{}{0}x"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="默认播放速度" Style="{StaticResource T.Body}"/>
+                            <TextBlock Text="每本书可以单独记住自己的速度" Style="{StaticResource T.Caption}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}"/>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <ComboBox DockPanel.Dock="Right" Width="120" VerticalAlignment="Center" ItemsSource="{Binding SeekSteps}" SelectedItem="{Binding SeekStep}"
+                                  ItemStringFormat="{}{0} 秒"/>
+                        <TextBlock Text="快进 / 后退步长" Style="{StaticResource T.Body}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}"/>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding AutoPlayNext}" VerticalAlignment="Center"/>
+                        <TextBlock Text="自动播放下一集" Style="{StaticResource T.Body}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}"/>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <CheckBox DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding ResumeOnStartup}" VerticalAlignment="Center"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="启动时恢复上次播放" Style="{StaticResource T.Body}"/>
+                            <TextBlock Text="快捷键：空格 播放/暂停 · ←/→ 快退/快进 · Ctrl+←/→ 上/下一集 · Ctrl+F 搜索" Style="{StaticResource T.Caption}"
+                                       Margin="0,2,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 网络 -->
+            <TextBlock Text="网络" Style="{StaticResource Section}"/>
+            <Border Style="{StaticResource Card}" Padding="18,14">
+                <StackPanel>
+                    <TextBlock Text="电脑版 User-Agent" Style="{StaticResource T.Body}" Margin="0,0,0,6"/>
+                    <TextBox Text="{Binding DesktopUA, UpdateSourceTrigger=LostFocus}"/>
+                    <TextBlock Text="手机版 User-Agent" Style="{StaticResource T.Body}" Margin="0,14,0,6"/>
+                    <TextBox Text="{Binding MobileUA, UpdateSourceTrigger=LostFocus}"/>
+                    <DockPanel Margin="0,14,0,0">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Secondary}" Content="恢复默认 UA" Command="{Binding ResetUACommand}"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="聚合搜索并发数" Style="{StaticResource T.Body}" VerticalAlignment="Center"/>
+                            <TextBox Width="64" Margin="12,0,0,0" Text="{Binding SearchConcurrency, UpdateSourceTrigger=LostFocus}"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock Text="网络请求自动使用系统代理设置。部分海外源需要代理，部分国内源则需要关闭代理。" Style="{StaticResource T.Caption}"
+                               TextWrapping="Wrap" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 存储 -->
+            <TextBlock Text="存储" Style="{StaticResource Section}"/>
+            <Border Style="{StaticResource Card}" Padding="18,4">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Secondary}" Content="清理" VerticalAlignment="Center" Command="{Binding ClearCacheCommand}"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="缓存" Style="{StaticResource T.Body}"/>
+                            <TextBlock Text="{Binding CacheSize}" Style="{StaticResource T.Caption}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource RowDivider}"/>
+                    <DockPanel Style="{StaticResource SettingRow}">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Secondary}" Content="打开" VerticalAlignment="Center" Command="{Binding OpenDataDirCommand}"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="数据目录" Style="{StaticResource T.Body}"/>
+                            <TextBlock Text="{Binding DataDir}" Style="{StaticResource T.Caption}" Margin="0,2,0,0"/>
+                            <TextBlock Text="在程序目录放一个 portable.txt 即可切换为便携模式（数据保存在程序目录）" Style="{StaticResource T.Caption}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 关于 -->
+            <TextBlock Text="关于" Style="{StaticResource Section}"/>
+            <Border Style="{StaticResource Card}" Padding="18,14">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource T.Body}">
+                        <Run Text="随身听书 " FontWeight="SemiBold"/><Run Text="v"/><Run Text="{Binding Version, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource T.Caption}" Margin="0,6,0,0" TextWrapping="Wrap">
+                        <Run Text="WebView2 运行时："/><Run Text="{Binding WebViewVersion, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource T.Caption}" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Text="基于 eprendre/tingshu 的自定义源思路移植。本程序只是播放器，不提供任何音频内容，所有内容来自第三方网站，请支持正版。"/>
+                    <Button Style="{StaticResource Btn.Secondary}" Content="安装 WebView2 运行时" HorizontalAlignment="Left" Margin="0,12,0,0"
+                            Command="{Binding InstallWebViewCommand}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

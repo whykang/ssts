@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="C.Bg">#F4F5F7</Color>
+    <Color x:Key="C.Shadow">#26000000</Color>
+    <SolidColorBrush x:Key="B.Bg" Color="#F4F5F7"/>
+    <SolidColorBrush x:Key="B.Sidebar" Color="#ECEEF1"/>
+    <SolidColorBrush x:Key="B.Surface" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="B.SurfaceAlt" Color="#EEF0F3"/>
+    <SolidColorBrush x:Key="B.Hover" Color="#0D000000"/>
+    <SolidColorBrush x:Key="B.Pressed" Color="#17000000"/>
+    <SolidColorBrush x:Key="B.Border" Color="#E2E4E9"/>
+    <SolidColorBrush x:Key="B.BorderStrong" Color="#CDD0D6"/>
+    <SolidColorBrush x:Key="B.Text" Color="#17191D"/>
+    <SolidColorBrush x:Key="B.Text2" Color="#5A606B"/>
+    <SolidColorBrush x:Key="B.Text3" Color="#959AA4"/>
+    <SolidColorBrush x:Key="B.PlayerBar" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="B.Overlay" Color="#66000000"/>
+    <SolidColorBrush x:Key="B.Danger" Color="#E5484D"/>
+    <SolidColorBrush x:Key="B.Success" Color="#20A06A"/>
+    <SolidColorBrush x:Key="B.Toast" Color="#E6202227"/>
+    <SolidColorBrush x:Key="B.ToastText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="B.Track" Color="#DDE0E5"/>
+    <LinearGradientBrush x:Key="B.HeroFade" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#B3F4F5F7" Offset="0"/>
+        <GradientStop Color="#F4F5F7" Offset="1"/>
+    </LinearGradientBrush>
+</ResourceDictionary>

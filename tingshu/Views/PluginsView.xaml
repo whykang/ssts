@@ -1,0 +1,174 @@
+<UserControl x:Class="tingshu.Views.PluginsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:tingshu.Controls"
+             xmlns:core="clr-namespace:tingshu.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,4,32,32">
+            <TextBlock Text="插件" Style="{StaticResource T.Display}"/>
+            <TextBlock Text="{Binding Summary}" Style="{StaticResource T.Secondary}" Margin="0,6,0,18"/>
+
+            <!-- 工具栏 -->
+            <WrapPanel Margin="0,0,0,16">
+                <Button Style="{StaticResource Btn.Primary}" Margin="0,0,8,8" Command="{Binding ImportCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE710;" FontFamily="{StaticResource F.Icons}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="导入插件"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource Btn.Secondary}" Margin="0,0,8,8" Command="{Binding ImportUrlCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE71B;" FontFamily="{StaticResource F.Icons}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="从网址导入"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource Btn.Secondary}" Margin="0,0,8,8" Command="{Binding OpenFolderCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource F.Icons}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="插件目录"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource Btn.Secondary}" Margin="0,0,8,8" Command="{Binding ReloadAllCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE72C;" FontFamily="{StaticResource F.Icons}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="重新加载"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource Btn.Ghost}" Margin="0,0,8,8" Command="{Binding OpenDocsCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE946;" FontFamily="{StaticResource F.Icons}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="开发文档"/>
+                    </StackPanel>
+                </Button>
+                <CheckBox Style="{StaticResource Switch}" Content="调试日志" IsChecked="{Binding ShowLogs}" Margin="8,0,0,8" VerticalAlignment="Center"/>
+            </WrapPanel>
+
+            <!-- 日志 -->
+            <Border Style="{StaticResource Card}" Padding="12" Margin="0,0,0,16" Visibility="{Binding ShowLogs, Converter={StaticResource BoolToVis}}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="4,0,0,8">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Ghost}" Content="清空" MinHeight="28" Padding="10,2" Command="{Binding ClearLogsCommand}"/>
+                        <TextBlock Text="日志" Style="{StaticResource T.Subtitle}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <ListBox x:Name="LogList" ItemsSource="{Binding Logs}" Height="220" Background="Transparent" BorderThickness="0"
+                             FontFamily="Cascadia Mono, Consolas, Microsoft YaHei UI" FontSize="11.5" Foreground="{DynamicResource B.Text2}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="4,1"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- 加载错误 -->
+            <ItemsControl ItemsSource="{Binding Errors}" Margin="0,0,0,8">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type core:PluginLoadError}">
+                        <Border Background="{DynamicResource B.AccentSoft}" CornerRadius="10" Padding="14,10" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource T.Body}" FontWeight="SemiBold" Foreground="{DynamicResource B.Danger}">
+                                    <Run Text="&#xE7BA;" FontFamily="{StaticResource F.Icons}"/> 加载失败：<Run Text="{Binding FilePath, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Message}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" c:Ui.Icon="&#xE71C;" c:Ui.Placeholder="筛选插件" MaxWidth="320"
+                     HorizontalAlignment="Left" Width="320" Margin="0,0,0,12"/>
+
+            <!-- 插件列表 -->
+            <ItemsControl ItemsSource="{Binding Entries}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <c:ResponsiveGrid MinItemWidth="460" Spacing="12" MaxColumns="3"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type core:SourceEntry}">
+                        <Border x:Name="card" Style="{StaticResource Card}" Padding="16,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Border Width="42" Height="42" CornerRadius="12" Background="{Binding Name, Converter={StaticResource Gradient}}" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="18" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="14,0,8,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource T.Subtitle}" FontSize="14.5"/>
+                                        <Border Style="{StaticResource Badge.Accent}" Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding PluginName}" FontSize="11" Foreground="{DynamicResource B.Accent}" ToolTip="所在的插件"/>
+                                        </Border>
+                                        <Border Style="{StaticResource Badge}" Margin="6,0,0,0" Visibility="{Binding Version, Converter={StaticResource EmptyToCollapsed}}">
+                                            <TextBlock FontSize="11" Foreground="{DynamicResource B.Text2}">v<Run Text="{Binding Version, Mode=OneWay}"/></TextBlock>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Source.Description}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" MaxHeight="38"
+                                               TextTrimming="CharacterEllipsis" Margin="0,6,0,0" ToolTip="{Binding Source.Description}"
+                                               Visibility="{Binding Source.Description, Converter={StaticResource EmptyToCollapsed}}"/>
+                                </StackPanel>
+                                <CheckBox Grid.Column="2" Style="{StaticResource Switch}" IsChecked="{Binding IsEnabled}" VerticalAlignment="Top" ToolTip="启用 / 禁用"/>
+
+                                <WrapPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,10,0,0">
+                                    <Button Style="{StaticResource Btn.Ghost}" Content="测试" MinHeight="28" Padding="10,2" ToolTip="测试分类/搜索/详情/音频解析，结果见调试日志"
+                                            Command="{Binding DataContext.TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource Btn.Ghost}" Content="登录" MinHeight="28" Padding="10,2"
+                                            Visibility="{Binding CanLogin, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.LoginCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource Btn.Ghost}" Content="设置" MinHeight="28" Padding="10,2"
+                                            Visibility="{Binding CanConfigure, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.ConfigureCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource Btn.Icon}" Content="&#xE74A;" Width="28" Height="28" FontSize="12" ToolTip="上移"
+                                            Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource Btn.Icon}" Content="&#xE74B;" Width="28" Height="28" FontSize="12" ToolTip="下移"
+                                            Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource Btn.Danger}" Content="删除" MinHeight="28" Padding="10,2"
+                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                </WrapPanel>
+                            </Grid>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                <Setter TargetName="card" Property="Opacity" Value="0.6"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- 说明 -->
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0" Background="{DynamicResource B.SurfaceAlt}" BorderThickness="0">
+                <StackPanel>
+                    <TextBlock Text="如何添加更多源？" Style="{StaticResource T.Subtitle}"/>
+                    <TextBlock Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="22" Margin="0,8,0,0">
+                        <Run Text="• 程序本身不带任何源，所有源都来自导入的 DLL 插件，一个插件可以包含多个源。"/>
+                        <LineBreak/>
+                        <Run Text="• DLL 插件：引用 TingShu.Sdk，继承 SourceBase 编写 C# 代码，详见开发文档。"/>
+                        <LineBreak/>
+                        <Run Text="• 插件包（.zip）：DLL 及其依赖打包在一起。"/>
+                        <LineBreak/>
+                        <Run Text="插件目录："/><Run Text="{Binding UserPluginsDir, Mode=OneWay}" Foreground="{DynamicResource B.Accent}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

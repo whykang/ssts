@@ -1,0 +1,14 @@
+# 编译输出
+bin/
+obj/
+publish/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+# 便携模式数据（书架、设置、Cookie、缓存）
+data/
+portable.txt

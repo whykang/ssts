@@ -1,0 +1,226 @@
+<Window x:Class="tingshu.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:tingshu.Controls"
+        xmlns:vm="clr-namespace:tingshu.ViewModels"
+        xmlns:v="clr-namespace:tingshu.Views"
+        xmlns:core="clr-namespace:tingshu.Core"
+        Title="随身听书" Width="1280" Height="800" MinWidth="700" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource B.Bg}" Foreground="{DynamicResource B.Text}"
+        FontFamily="{StaticResource F.Text}" FontSize="13"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        DataContext="{x:Static vm:MainViewModel.Instance}">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="48" ResizeBorderThickness="6" GlassFrameThickness="1" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="Taskbar"/>
+    </Window.TaskbarItemInfo>
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:LibraryViewModel}"><v:LibraryView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DiscoverViewModel}"><v:DiscoverView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SearchViewModel}"><v:SearchView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PluginsViewModel}"><v:PluginsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BookDetailViewModel}"><v:BookDetailView/></DataTemplate>
+
+    </Window.Resources>
+
+    <Grid x:Name="ShellRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ================= 侧边栏 ================= -->
+            <Border x:Name="Sidebar" Width="216" Background="{DynamicResource B.Sidebar}" c:Ui.ShowLabel="True">
+                <DockPanel Margin="12,0,12,14">
+                    <!-- Logo -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Height="64" Margin="6,0,0,4">
+                        <Border Width="32" Height="32" CornerRadius="9" VerticalAlignment="Center">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="{DynamicResource C.Accent}" Offset="0"/>
+                                    <GradientStop Color="#FFB347" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="&#xE7F6;" FontFamily="{StaticResource F.Icons}" FontSize="16" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock x:Name="LogoText" Text="随身听书" FontSize="17" FontWeight="Bold" Margin="12,0,0,0" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource B.Text}"/>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <RadioButton Style="{StaticResource Nav.Item}" Tag="&#xEA86;" Content="插件" GroupName="nav" ToolTip="插件管理"
+                                     IsChecked="{Binding NavKey, Converter={StaticResource Equals}, ConverterParameter=plugins}"/>
+                        <RadioButton Style="{StaticResource Nav.Item}" Tag="&#xE713;" Content="设置" GroupName="nav" ToolTip="设置"
+                                     IsChecked="{Binding NavKey, Converter={StaticResource Equals}, ConverterParameter=settings}"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <RadioButton Style="{StaticResource Nav.Item}" Tag="&#xE8F1;" Content="我的书架" GroupName="nav" ToolTip="我的书架"
+                                     IsChecked="{Binding NavKey, Converter={StaticResource Equals}, ConverterParameter=library}"/>
+                        <RadioButton Style="{StaticResource Nav.Item}" Tag="&#xE909;" Content="发现" GroupName="nav" ToolTip="发现"
+                                     IsChecked="{Binding NavKey, Converter={StaticResource Equals}, ConverterParameter=discover}"/>
+                        <RadioButton Style="{StaticResource Nav.Item}" Tag="&#xE721;" Content="搜索" GroupName="nav" ToolTip="聚合搜索"
+                                     IsChecked="{Binding NavKey, Converter={StaticResource Equals}, ConverterParameter=search}"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ================= 内容区 ================= -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 标题栏 -->
+                <DockPanel LastChildFill="False">
+                    <Button DockPanel.Dock="Left" Style="{StaticResource Btn.Icon}" Content="&#xE72B;" Margin="16,0,0,0" ToolTip="返回 (Alt+←)"
+                            WindowChrome.IsHitTestVisibleInChrome="True" Command="{Binding GoBackCommand}"
+                            Visibility="{Binding CanGoBack, Converter={StaticResource BoolToVis}}"/>
+
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                        <Button Style="{StaticResource Btn.Caption}" Content="&#xE921;" Click="Minimize_Click" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="最小化"/>
+                        <Button x:Name="MaxButton" Style="{StaticResource Btn.Caption}" Content="&#xE922;" Click="Maximize_Click" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="最大化"/>
+                        <Button Style="{StaticResource Btn.Close}" Content="&#xE8BB;" Click="Close_Click" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="关闭"/>
+                    </StackPanel>
+
+                    <TextBox x:Name="GlobalSearch" DockPanel.Dock="Right" Width="260" MinHeight="32" Margin="0,0,12,0" VerticalAlignment="Center"
+                             c:Ui.Icon="&#xE721;" c:Ui.Placeholder="搜索书名、作者、演播…" c:Ui.CornerRadius="16"
+                             Background="{DynamicResource B.Surface}" WindowChrome.IsHitTestVisibleInChrome="True" KeyDown="GlobalSearch_KeyDown"/>
+                </DockPanel>
+
+                <!-- 页面 -->
+                <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Focusable="False"/>
+
+                <!-- 提示 -->
+                <Border Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="20,0,20,24" Padding="18,10"
+                        CornerRadius="20" Background="{DynamicResource B.Toast}" Effect="{StaticResource E.Shadow}" IsHitTestVisible="False"
+                        Visibility="{Binding IsToastVisible, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding ToastText}" Foreground="{DynamicResource B.ToastText}" FontSize="13" TextWrapping="Wrap" MaxWidth="520"/>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ================= 播放条 ================= -->
+        <Border Grid.Row="1" Height="84" Background="{DynamicResource B.PlayerBar}" BorderBrush="{DynamicResource B.Border}" BorderThickness="0,1,0,0"
+                DataContext="{Binding Player}">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="180" MaxWidth="380"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition x:Name="RightColumn" Width="*" MaxWidth="380"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 当前书籍 -->
+                <Grid Background="Transparent" Cursor="Hand" ToolTip="打开章节列表">
+                    <Grid.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding DataContext.OpenPlayingCommand, ElementName=ShellRoot}"/>
+                    </Grid.InputBindings>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <c:CoverImage Width="54" Height="54" Radius="8" Url="{Binding Book.CoverUrl}" SourceId="{Binding Book.SourceId}"
+                                  Title="{Binding Book.Title, FallbackValue=听}"/>
+                    <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Book.Title, FallbackValue=还没有在听的书}" Style="{StaticResource T.Body}" FontWeight="SemiBold" FontSize="14"/>
+                        <TextBlock Text="{Binding EpisodeTitle}" Style="{StaticResource T.Caption}" Margin="0,3,0,0"/>
+                        <TextBlock Text="{Binding Error}" Style="{StaticResource T.Caption}" Foreground="{DynamicResource B.Danger}" Margin="0,2,0,0"
+                                   Visibility="{Binding Error, Converter={StaticResource EmptyToCollapsed}}" ToolTip="{Binding Error}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 控制 -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" MaxWidth="640" IsEnabled="{Binding HasBook}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Style="{StaticResource Btn.Icon}" Content="&#xEB9E;" Command="{Binding RewindCommand}" ToolTip="后退 (←)" Margin="4,0"/>
+                        <Button Style="{StaticResource Btn.Icon}" Content="&#xE892;" Command="{Binding PreviousCommand}" ToolTip="上一集 (Ctrl+←)" Margin="4,0"/>
+                        <Grid Margin="10,0">
+                            <Button Style="{StaticResource Btn.Play}" Content="{Binding IsPlaying, Converter={StaticResource PlayGlyph}}"
+                                    Command="{Binding TogglePlayCommand}" ToolTip="播放 / 暂停 (空格)"/>
+                            <c:Spinner Width="50" Height="50" Foreground="{DynamicResource B.Accent}" IsHitTestVisible="False"
+                                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+                        </Grid>
+                        <Button Style="{StaticResource Btn.Icon}" Content="&#xE893;" Command="{Binding NextCommand}" ToolTip="下一集 (Ctrl+→)" Margin="4,0"/>
+                        <Button Style="{StaticResource Btn.Icon}" Content="&#xEB9D;" Command="{Binding ForwardCommand}" ToolTip="快进 (→)" Margin="4,0"/>
+                    </StackPanel>
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="52"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding PositionText}" Style="{StaticResource T.Caption}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11"/>
+                        <Slider x:Name="SeekSlider" Grid.Column="1" Minimum="0" Maximum="{Binding SeekMaximum}" Value="{Binding Position, Mode=TwoWay}"
+                                PreviewMouseLeftButtonDown="Seek_MouseDown" PreviewMouseLeftButtonUp="Seek_MouseUp" LostMouseCapture="Seek_LostCapture"/>
+                        <TextBlock Grid.Column="2" Text="{Binding DurationText}" Style="{StaticResource T.Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- 右侧：倍速、定时、音量 -->
+                <StackPanel x:Name="RightTools" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Btn.Ghost}" MinHeight="32" Padding="10,4" Content="{Binding SpeedText}" ToolTip="播放速度">
+                        <c:Ui.DropDown>
+                            <ContextMenu ItemsSource="{x:Static core:PlayerService.SpeedOptions}">
+                                <ContextMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                        <Setter Property="Header" Value="{Binding StringFormat={}{0}x}"/>
+                                        <Setter Property="Command" Value="{Binding SetSpeedCommand, Source={x:Static core:PlayerService.Instance}}"/>
+                                        <Setter Property="CommandParameter" Value="{Binding}"/>
+                                        <Setter Property="IsChecked">
+                                            <Setter.Value>
+                                                <MultiBinding Converter="{StaticResource MultiEquals}">
+                                                    <Binding/>
+                                                    <Binding Path="Speed" Source="{x:Static core:PlayerService.Instance}"/>
+                                                </MultiBinding>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ContextMenu.ItemContainerStyle>
+                            </ContextMenu>
+                        </c:Ui.DropDown>
+                    </Button>
+                    <Button Style="{StaticResource Btn.Ghost}" MinHeight="32" Padding="8,4" ToolTip="定时关闭">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE916;" FontFamily="{StaticResource F.Icons}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SleepText}" Margin="6,0,0,0" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource B.Accent}"
+                                       Visibility="{Binding SleepText, Converter={StaticResource EmptyToCollapsed}}"/>
+                        </StackPanel>
+                        <c:Ui.DropDown>
+                            <ContextMenu>
+                                <MenuItem Header="15 分钟后" Command="{Binding SetSleepCommand}" CommandParameter="15"/>
+                                <MenuItem Header="30 分钟后" Command="{Binding SetSleepCommand}" CommandParameter="30"/>
+                                <MenuItem Header="45 分钟后" Command="{Binding SetSleepCommand}" CommandParameter="45"/>
+                                <MenuItem Header="60 分钟后" Command="{Binding SetSleepCommand}" CommandParameter="60"/>
+                                <MenuItem Header="90 分钟后" Command="{Binding SetSleepCommand}" CommandParameter="90"/>
+                                <MenuItem Header="播完本集" Command="{Binding SetSleepCommand}" CommandParameter="end"/>
+                                <Separator/>
+                                <MenuItem Header="关闭定时" Command="{Binding SetSleepCommand}" CommandParameter="off"/>
+                            </ContextMenu>
+                        </c:Ui.DropDown>
+                    </Button>
+                    <Button Style="{StaticResource Btn.Icon}" Content="&#xE8FD;" ToolTip="章节列表" Margin="2,0"
+                            Command="{Binding DataContext.OpenPlayingCommand, ElementName=ShellRoot}"/>
+                    <Button Style="{StaticResource Btn.Icon}" Content="{Binding IsMuted, Converter={StaticResource MuteGlyph}}" Command="{Binding ToggleMuteCommand}"
+                            ToolTip="静音" Margin="2,0"/>
+                    <Slider x:Name="VolumeSlider" Width="96" Minimum="0" Maximum="1" Value="{Binding Volume}" SmallChange="0.05" LargeChange="0.1"
+                            VerticalAlignment="Center" ToolTip="音量"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,20 @@
+<Application x:Class="tingshu.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 第一个位置由 ThemeManager 替换为浅色/深色配色 -->
+                <ResourceDictionary Source="Themes/Light.xaml"/>
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+                <ResourceDictionary Source="Themes/Templates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="B.Accent" Color="#FF6B4A"/>
+            <SolidColorBrush x:Key="B.AccentHover" Color="#FF7F62"/>
+            <SolidColorBrush x:Key="B.AccentPressed" Color="#E05A3C"/>
+            <SolidColorBrush x:Key="B.AccentSoft" Color="#22FF6B4A"/>
+            <SolidColorBrush x:Key="B.OnAccent" Color="White"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>TingShu</AssemblyName>
+    <RootNamespace>tingshu</RootNamespace>
+    <Product>随身听书</Product>
+    <Version>1.0.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+    <!-- 同时适配 x64 / x86 / ARM64 电脑 -->
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2651.64" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TingShu.Sdk\TingShu.Sdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+    <None Include="..\docs\**\*.md" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- 发布时附带 SDK（单文件发布会把它打包进 exe，插件开发者需要单独的 dll 来引用） -->
+  <Target Name="PublishSdk" AfterTargets="Publish">
+    <ItemGroup>
+      <SdkFiles Include="..\TingShu.Sdk\bin\$(Configuration)\net8.0\TingShu.Sdk.dll;..\TingShu.Sdk\bin\$(Configuration)\net8.0\TingShu.Sdk.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SdkFiles)" DestinationFolder="$(PublishDir)sdk" SkipUnchangedFiles="true" Condition="Exists('%(SdkFiles.FullPath)')" />
+  </Target>
+
+</Project>

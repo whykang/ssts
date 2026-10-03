@@ -1,0 +1,82 @@
+<UserControl x:Class="tingshu.Views.DiscoverView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:tingshu.Controls">
+    <Grid>
+        <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" c:Ui.LoadMoreCommand="{Binding LoadMoreCommand}">
+            <StackPanel Margin="32,4,32,32">
+                <!-- 标题 + 源选择 -->
+                <DockPanel Margin="0,0,0,18">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" MinWidth="180" MaxDropDownHeight="420">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="20" Height="20" CornerRadius="6" Background="{Binding Name, Converter={StaticResource Gradient}}">
+                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Style="{StaticResource Btn.Icon}" Content="&#xE72C;" Margin="6,0,0,0" ToolTip="刷新" Command="{Binding RefreshCommand}"/>
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="发现" Style="{StaticResource T.Display}"/>
+                        <TextBlock Text="{Binding SelectedSource.Source.Description}" Style="{StaticResource T.Caption}" Margin="0,4,24,0"
+                                   Visibility="{Binding SelectedSource.Source.Description, Converter={StaticResource EmptyToCollapsed}}"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- 一级分类 -->
+                <ListBox Style="{StaticResource Plain.ListBox}" ItemContainerStyle="{StaticResource Tab}" ItemsSource="{Binding Menus}"
+                         SelectedItem="{Binding SelectedMenu}" DisplayMemberPath="Title" Margin="0,0,0,12"
+                         Visibility="{Binding Menus.Count, Converter={StaticResource EmptyToCollapsed}}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+
+                <!-- 二级分类 -->
+                <ListBox Style="{StaticResource Plain.ListBox}" ItemContainerStyle="{StaticResource Chip}" ItemsSource="{Binding Tabs}"
+                         SelectedItem="{Binding SelectedTab}" DisplayMemberPath="Title" Margin="0,0,0,12">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+
+                <!-- 加载中 / 错误 -->
+                <c:Spinner Width="36" Height="36" Margin="0,60,0,0" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+                <StackPanel HorizontalAlignment="Center" Margin="0,60,0,0" Visibility="{Binding Error, Converter={StaticResource EmptyToCollapsed}}">
+                    <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource F.Icons}" FontSize="36" Foreground="{DynamicResource B.Text3}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding Error}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" MaxWidth="480" TextAlignment="Center" Margin="0,12,0,0"/>
+                    <Button Style="{StaticResource Btn.Secondary}" Content="重试" HorizontalAlignment="Center" Margin="0,14,0,0" Command="{Binding RefreshCommand}"/>
+                </StackPanel>
+
+                <!-- 书籍 -->                <ItemsControl ItemsSource="{Binding Books}" ItemTemplate="{StaticResource BookCard}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <c:ResponsiveGrid MinItemWidth="330" Spacing="14"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <c:Spinner Margin="0,20" Visibility="{Binding IsLoadingMore, Converter={StaticResource BoolToVis}}"/>
+                <Button Style="{StaticResource Btn.Secondary}" Content="加载更多" HorizontalAlignment="Center" Margin="0,20,0,0"
+                        Command="{Binding LoadMoreCommand}" Visibility="{Binding HasMore, Converter={StaticResource BoolToVis}}"/>
+
+                <StackPanel Style="{StaticResource EmptyState}" Visibility="{Binding Sources.Count, Converter={StaticResource EmptyToVisible}}">
+                    <TextBlock Text="&#xEA86;" FontFamily="{StaticResource F.Icons}" FontSize="48" Foreground="{DynamicResource B.Text3}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="还没有可用的源，去“插件”页面导入或启用吧" Style="{StaticResource T.Secondary}" Margin="0,16,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>
