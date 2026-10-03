@@ -85,3 +85,10 @@ dotnet build sources/ShunSources.Plugin -c Release
 
 - 默认在 `%AppData%\TingShu`：`settings.json`、`library.json`、`plugins\`、`cache\`、`log.txt`
 - 程序目录下放一个 `portable.txt` 即进入便携模式，数据改为保存在程序目录的 `data\` 下
+
+## 协议
+
+版权所有 © 2026 whykang，保留所有权利，详见 [LICENSE](LICENSE)。
+
+- 可以：查看和学习源代码；个人非商业使用；基于 TingShu.Sdk 开发并分发独立的插件
+- 不可以：修改后发布、二次开发或用于其它项目、改名重新发布、任何商业用途
