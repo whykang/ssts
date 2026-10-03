@@ -88,7 +88,9 @@ dotnet build sources/ShunSources.Plugin -c Release
 
 ## 协议
 
-版权所有 © 2026 whykang，保留所有权利，详见 [LICENSE](LICENSE)。
+本项目采用 [PolyForm Strict License 1.0.0](LICENSE)，版权所有 © 2026 whykang。
 
-- 可以：查看和学习源代码；个人非商业使用；基于 TingShu.Sdk 开发并分发独立的插件
-- 不可以：修改后发布、二次开发或用于其它项目、改名重新发布、任何商业用途
+- 允许：查看源代码，以及个人学习、研究、娱乐等非商业用途的使用
+- 不允许：修改源代码、基于本项目制作新作品（二次开发）、分发本软件、任何商业用途
+
+在此之外，作者另行许可：可以基于 TingShu.Sdk 开发听书源插件并自行分发，插件中不得包含本项目除 SDK 接口以外的代码。

@@ -1,33 +1,61 @@
-随身听书 软件许可协议
+Required Notice: Copyright (c) 2026 whykang (https://github.com/whykang/ssts)
 
-版权所有 (c) 2026 whykang。保留所有权利。
+# PolyForm Strict License 1.0.0
 
-本项目（包括源代码、程序、文档、图标及其它资源，以下简称“本软件”）公开源代码仅供查看和学习。
-除本协议明确允许的情形外，未经版权所有者书面许可，不得以任何方式使用、复制、修改或分发本软件。
+<https://polyformproject.org/licenses/strict/1.0.0>
 
-一、允许
+## Acceptance
 
-1. 查看、阅读和学习本软件的源代码；
-2. 个人出于非商业目的下载、编译和使用本软件；
-3. 基于 TingShu.Sdk 开发独立的听书源插件，并自行分发该插件。插件中不得包含本软件除 TingShu.Sdk 接口以外的源代码。
+In order to get any license under these terms, you must agree to them as both strict obligations and conditions to all your licenses.
 
-二、禁止
+## Copyright License
 
-1. 修改本软件的源代码后发布、分发或提供下载；
-2. 基于本软件（全部或部分代码）进行二次开发，制作衍生作品，或将其代码用于其它项目；
-3. 将本软件改名、换图标或去除版权信息后重新发布；
-4. 将本软件或其衍生作品用于任何商业用途，包括但不限于销售、收费下载、付费服务、捆绑分发、通过广告获利；
-5. 删除或修改本协议及软件中的版权声明。
+The licensor grants you a copyright license for the software to do everything you might do with the software that would otherwise infringe the licensor's copyright in it for any permitted purpose, other than distributing the software or making changes or new works based on the software.
 
-在 GitHub 上复刻（Fork）本仓库仅限于 GitHub 服务条款允许的查看用途，不代表获得修改或分发的许可。
+## Patent License
 
-三、免责声明
+The licensor grants you a patent license for the software that covers patent claims the licensor can license, or becomes able to license, that you would infringe by using the software.
 
-本软件按“原样”提供，不附带任何明示或暗示的担保。因使用本软件造成的任何损失，版权所有者不承担责任。
-本软件只是播放器，不提供任何音频内容。通过插件获取的内容均来自第三方网站，版权归原权利人所有，请支持正版。
+## Noncommercial Purposes
 
-四、终止
+Any noncommercial purpose is a permitted purpose.
 
-违反本协议任何条款的，本协议授予的许可自动终止，使用者应立即停止使用并删除本软件的全部副本。
+## Personal Uses
 
-如需上述禁止情形以外的授权，请联系版权所有者。
+Personal use for research, experiment, and testing for the benefit of public knowledge, personal study, private entertainment, hobby projects, amateur pursuits, or religious observance, without any anticipated commercial application, is use for a permitted purpose.
+
+## Noncommercial Organizations
+
+Use by any charitable organization, educational institution, public research organization, public safety or health organization, environmental protection organization, or government institution is use for a permitted purpose regardless of the source of funding or obligations resulting from the funding.
+
+## Fair Use
+
+You may have "fair use" rights for the software under the law. These terms do not limit them.
+
+## No Other Rights
+
+These terms do not allow you to sublicense or transfer any of your licenses to anyone else, or prevent the licensor from granting licenses to anyone else.  These terms do not imply any other licenses.
+
+## Patent Defense
+
+If you make any written claim that the software infringes or contributes to infringement of any patent, your patent license for the software granted under these terms ends immediately. If your company makes such a claim, your patent license ends immediately for work on behalf of your company.
+
+## Violations
+
+The first time you are notified in writing that you have violated any of these terms, or done anything with the software not covered by your licenses, your licenses can nonetheless continue if you come into full compliance with these terms, and take practical steps to correct past violations, within 32 days of receiving notice.  Otherwise, all your licenses end immediately.
+
+## No Liability
+
+***As far as the law allows, the software comes as is, without any warranty or condition, and the licensor will not be liable to you for any damages arising out of these terms or the use or nature of the software, under any kind of legal claim.***
+
+## Definitions
+
+The **licensor** is the individual or entity offering these terms, and the **software** is the software the licensor makes available under these terms.
+
+**You** refers to the individual or entity agreeing to these terms.
+
+**Your company** is any legal entity, sole proprietorship, or other kind of organization that you work for, plus all organizations that have control over, are under the control of, or are under common control with that organization.  **Control** means ownership of substantially all the assets of an entity, or the power to direct its management and policies by vote, contract, or otherwise.  Control can be direct or indirect.
+
+**Your licenses** are all the licenses granted to you for the software under these terms.
+
+**Use** means anything you do with the software requiring one of your licenses.
