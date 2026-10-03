@@ -111,12 +111,10 @@ public sealed partial class PluginsViewModel : ObservableObject, IPageActivated
     [RelayCommand]
     private void OpenFolder() => Open(AppPaths.UserPluginsDir);
 
+    private const string DocsUrl = "https://github.com/whykang/ssts/blob/main/docs/plugin-development.md";
+
     [RelayCommand]
-    private void OpenDocs()
-    {
-        var doc = Path.Combine(AppPaths.AppDir, "docs");
-        Open(Directory.Exists(doc) ? doc : "https://github.com/eprendre/tingshu");
-    }
+    private void OpenDocs() => Open(DocsUrl);
 
     [RelayCommand]
     private void Delete(SourceEntry? entry)
