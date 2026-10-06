@@ -7,9 +7,9 @@
     <AssemblyName>ShunSources.Plugin</AssemblyName>
     <RootNamespace>ShunSources</RootNamespace>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <Version>2.0.0</Version>
+    <Version>2.1.1</Version>
     <Company>shun（移植）</Company>
-    <Description>听书源合集：全部听书源打包在这一个插件里（懒人听书、哔哩哔哩、酷我、评书随身听、相声随身听等 18 个源），导入即可使用</Description>
+    <Description>听书源合集：全部听书源打包在这一个插件里（懒人听书、哔哩哔哩、酷我、喜马拉雅、评书随身听、相声随身听等 19 个源），导入即可使用</Description>
   </PropertyGroup>
 
   <ItemGroup>

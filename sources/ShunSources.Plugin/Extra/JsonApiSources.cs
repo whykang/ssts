@@ -15,21 +15,32 @@ public sealed class BoKanYouSheng : ShunSource
 
     public override async Task<SearchResult> SearchAsync(string keywords, int page, CancellationToken ct)
     {
+        // “图书”和“专辑”是两个接口，各自分页：每次两边都取第 page 页，总页数取较大的那个。
+        // 接口最多只给前 100 条（再往后返回错误 40011），所以最多 5 页
+        const int limit = 20, maxPage = 100 / limit;
         var books = new List<Book>();
+        var totalPage = 1;
+        if (page > maxPage) return new SearchResult(books, maxPage);
         foreach (var type in new[] { "book", "album" })
         {
             try
             {
                 var json = await Host.GetJsonAsync(
-                    $"https://es.bookan.com.cn/api/v3/voice/{type}?instanceId={Instance}&keyword={Enc(keywords)}&pageNum=1&limitNum=20", ct: ct);
-                books.AddRange(json.Items("data.list").Select(i => new Book(i.Str("cover"), i.Str("id"), i.Str("name"))));
+                    $"https://es.bookan.com.cn/api/v3/voice/{type}?instanceId={Instance}&keyword={Enc(keywords)}&pageNum={page}&limitNum={limit}", ct: ct);
+                var data = json["data"];
+                totalPage = Math.Max(totalPage, Math.Min(maxPage, data.Int("last_page")));
+                books.AddRange(data.Items("list").Select(i => new Book(i.Str("cover"), i.Str("id"), i.Str("name"))
+                {
+                    Status = i.Int("total") > 0 ? $"共 {i.Int("total")} 章" : "",
+                    Intro = i.Str("intro"),
+                }));
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Host.Log($"搜索 {type} 失败：{ex.Message}");
             }
         }
-        return new SearchResult(books, 1);
+        return new SearchResult(books, Math.Max(totalPage, page));
     }
 
     public override Task<IReadOnlyList<CategoryMenu>> GetCategoryMenusAsync(CancellationToken ct)

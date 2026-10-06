@@ -2,7 +2,7 @@
 
 程序本身不带任何源，所有源都由 DLL 插件提供。插件是一个普通的 .NET 8 类库，引用 `TingShu.Sdk`，继承 `SourceBase` 编写；一个插件程序集里可以包含任意多个源。
 
-完整示例：[sources/ShunSources.Plugin](../sources/ShunSources.Plugin)，一个插件里包含了 18 个源，覆盖了本文提到的大部分写法。
+完整示例：[sources/ShunSources.Plugin](../sources/ShunSources.Plugin)，一个插件里包含了 19 个源，覆盖了本文提到的大部分写法。
 
 ## 1. 创建项目
 
