@@ -5,24 +5,31 @@
 
 ## 界面预览
 
-**发现**：按源浏览分类，一键切换听书源
+**发现**：按源浏览分类，点标题切换听书源；内置的“云听”可以收听各地的广播电台
 
 ![发现](docs/images/discover.webp)
 
-**聚合搜索**：多个源同时搜索，按源筛选结果
+**书架**：收藏的书可以分类，和最近播放分开；右边的按钮直接接着听
 
-![聚合搜索](docs/images/search.webp)
+![书架](docs/images/library.webp)
+
+**详情**：左边是书的信息，右边是章节，可以筛选、定位到上次听到的地方、倒序
+
+![详情](docs/images/detail.webp)
 
 ## 功能
 
-- **通用插件**：程序本身不带任何源，所有源都来自导入的 **DLL 插件**
-  - C# 编写，引用 TingShu.Sdk 继承 SourceBase 即可（[开发指南](docs/plugin-development.md)），一个插件可以包含多个源
-  - 全部听书源都打包在 `ShunSources.Plugin` 这一个插件里，首次使用时在“插件”页导入它即可
-  - 支持从文件 / 网址导入 .dll / .zip，启用、禁用、排序，以及一键测试和调试日志
-- 发现（分类浏览、无限滚动）、**聚合搜索**（多源并发，按源筛选）、书架和最近播放
-- 播放：断点续播、自动下一集、倍速 0.5–3x、快进快退、定时关闭、单书跳过片头片尾、章节倒序和筛选
+- **通用插件**：程序本身不带任何听书源，所有源都来自导入的插件，一个插件可以包含多个源（[开发指南](docs/plugin-development.md)）
+  - **脚本插件**：一个 zip 包，里面是 `manifest.json` 和 JavaScript 脚本，用文本编辑器就能写，导入后立即生效
+  - **DLL 插件**：C# 编写，引用 TingShu.Sdk 继承 SourceBase；全部听书源都打包在 `ShunSources.Plugin` 这一个插件里
+  - 支持从文件 / 网址导入，或者把 zip 直接拖进“插件”页；可以启用、禁用、排序、登录，以及一键测试和调试日志
+- **广播电台**：内置“云听”，可以收听全国各地的广播电台直播；也可以自己添加电台（名称 + 直播流地址）
+- **网盘**：内置夸克网盘、百度网盘、阿里云盘和 WebDAV（可以连自己的 NAS）。在“设置 → 网盘”里开启并登录成功后，才会出现在“插件”和“发现”里；每个文件夹是一本书，里面的音频是章节，可以指定只看某个目录
+- **本地文件**：在“设置 → 本地文件”里开启并选择一个文件夹后，作为一个源出现；每个子文件夹是一本书，文件夹里的图片用作封面
+- 发现（分类浏览、无限滚动）、**聚合搜索**（多源并发，按源筛选，需要人机验证的网站可以在程序里完成验证）、书架（支持自己建分类）和最近播放
+- 播放：断点续播、自动下一集、倍速 0.5–3x、快进快退、暂停后自动回退几秒、定时关闭（按时间或按集数）、单书跳过片头片尾、章节倒序和筛选；点底部播放条可以展开播放页
 - 音频提取：直链 / HTML / JSON / 正则 / **WebView 渲染** / **WebView 嗅探**；本地代理统一附加 UA、Referer、Cookie，并支持拖动进度
-- 界面：浅色、深色、跟随系统，7 种主题色；自绘标题栏，Windows 11 下圆角；任务栏缩略图上有播放控制按钮和进度
+- 界面：浅色、深色、跟随系统，7 种主题色；自绘标题栏，Windows 11 下圆角；任务栏缩略图上有播放控制按钮和进度；关闭按钮可以设为收到右下角托盘，继续在后台播放
 - **适配大部分电脑**：
   - 每显示器 DPI 感知，高分屏和多屏缩放不同时也清晰
   - 窄窗口时侧栏自动收起，卡片列数随窗口宽度变化
@@ -35,15 +42,49 @@
 
 📖 **[插件开发指南](docs/plugin-development.md)**
 
-新建一个 .NET 8 类库，引用 `TingShu.Sdk`，继承 `SourceBase` 实现搜索、分类、详情和音频提取，编译出的 dll 在程序的“插件”页导入即可。指南包括：
+插件有两种写法，可以同时安装：
 
-- 创建项目、编写第一个源
-- 6 种音频提取方式（直链、HTML、JSON、WebView 渲染、WebView 嗅探、自定义）
-- 宿主提供的网络请求、WebView、配置、进度报告等能力
-- 登录、搜索验证、设置项、增量更新章节等可选接口
+**脚本插件（推荐）**：一个 zip 包，里面是 `manifest.json` 和若干 `.js`，不需要开发环境。
+
+```json
+{ "name": "MySources", "version": "1.0.0", "author": "作者名", "scripts": ["sites.js"] }
+```
+
+```js
+registerSource({
+  id: '0f9c0b5c2d7e4c1b9a0e6f3a2b1c4d5e',
+  name: '我的站点',
+  url: 'https://example.com',
+
+  search: function (keywords, page) {
+    var doc = this.host.getHtml('https://example.com/search?q=' + encodeURIComponent(keywords) + '&p=' + page);
+    var books = doc.select('.item').map(function (e) {
+      return { bookUrl: e.first('a').absUrl('href'), title: e.first('h3').text(), coverUrl: e.first('img').absUrl('src') };
+    });
+    return { books: books, totalPage: page };
+  },
+
+  bookDetail: function (bookUrl) {
+    var doc = this.host.getHtml(bookUrl);
+    return { episodes: doc.select('#playlist a').map(function (a) { return { title: a.text(), url: a.absUrl('href') }; }) };
+  },
+
+  audio: function (episodeUrl) {
+    return this.host.getHtml(episodeUrl).first('audio').absUrl('src');
+  }
+});
+```
+
+把这两个文件压缩成 zip，在程序的“插件”页导入（或直接拖进去）即可。程序内置的广播电台就是用同样的方式写的。
+
+**DLL 插件**：新建一个 .NET 8 类库，引用 `TingShu.Sdk`，继承 `SourceBase` 实现搜索、分类、详情和音频提取，编译出的 dll 在“插件”页导入。完整示例见 [sources/ShunSources.Plugin](sources/ShunSources.Plugin)。
+
+指南包括：
+
+- 脚本插件：插件包的结构、源的属性和方法、宿主提供的网络请求 / WebView / 配置 / 缓存、HTML 与 JSON 帮助方法
+- DLL 插件：创建项目、6 种音频提取方式（直链、HTML、JSON、WebView 渲染、WebView 嗅探、自定义）
+- 登录、搜索验证、设置项、增量更新章节等可选功能
 - 分页章节、访问频率限制的处理，调试、打包与安装
-
-完整示例见 [sources/ShunSources.Plugin](sources/ShunSources.Plugin)。
 
 ## 目录结构
 
@@ -51,6 +92,8 @@
 tingshu.sln
 ├─ tingshu/                  WPF 程序
 │  ├─ Core/                  插件加载、网络、WebView、音频代理、播放器、书架存储
+│  ├─ Drives/                内置的网盘源（夸克、百度、阿里云盘、WebDAV）和本地文件源
+│  ├─ Js/                    脚本插件引擎，以及内置的广播电台脚本
 │  ├─ ViewModels/  Views/    界面（MVVM）
 │  ├─ Controls/  Themes/     自定义控件、浅色/深色主题与控件样式
 │  └─ Properties/PublishProfiles/   win-x64 / win-x86 / win-arm64 发布配置
