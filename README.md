@@ -12,9 +12,11 @@
 | [ssts-4.0.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v4.0/ssts-4.0.0-win-x64.zip) | 绝大多数电脑（64 位 Windows 10 / 11） |
 | [ssts-4.0.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v4.0/ssts-4.0.0-win-x86.zip) | 32 位旧电脑 |
 | [ssts-4.0.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v4.0/ssts-4.0.0-win-arm64.zip) | ARM 笔记本 |
+| [ssts-mac-4.0.dmg](https://github.com/whykang/ssts/releases/download/v4.0/ssts-mac-4.0.dmg) | Mac 版（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
 | [Sources-v4.zip](https://github.com/whykang/ssts/releases/download/v4.0/Sources-v4.zip) | 听书源插件 |
 
-1. 下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
+1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
+   Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
 2. 程序本身不带任何听书源：下载 `Sources-v4.zip`（不用解压），在程序的“插件”页点“导入”选择它，或者直接把它拖进“插件”页。
 
 ## 界面预览
