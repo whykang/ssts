@@ -3,6 +3,8 @@
 参照 [eprendre/tingshu](https://github.com/eprendre/tingshu) 的自定义源机制，用 WPF 编写的 Windows 听书程序。
 本程序只是播放器，不提供任何内容，所有音频都来自第三方网站，请支持正版。
 
+> **安卓版和 iOS 版**在这里下载：[whykang/ssts--Android](https://github.com/whykang/ssts--Android)（插件和电脑版通用）
+
 ## 下载
 
 最新版本：**v4.0**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
