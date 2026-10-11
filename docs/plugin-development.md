@@ -148,6 +148,7 @@ registerSource({
 | `parseHtml(html, baseUrl)` | 解析一段 HTML |
 | `cookies(url)` | 这个地址现在会带上的 Cookie，格式 `a=1; b=2`（包括在登录窗口里登录后得到的） |
 | `userAgent(desktop)` | 用户在设置里配置的电脑版 / 手机版 UA |
+| `webViewUA()` | WebView 自带的真实 UA（不是设置里那两个）。过网站的人机验证后，要用同一个 UA 发请求时用它；旧版程序没有这个能力时返回空字符串 |
 
 `options` 的字段：
 
@@ -164,7 +165,7 @@ registerSource({
 
 | 方法 | 说明 |
 |---|---|
-| `render(url, { desktop, script, timeout, parse })` | 用 WebView 加载页面，反复执行 `script`（默认返回整个 HTML），把结果交给 `parse(结果)`，直到它返回非空字符串，这个字符串就是 `render` 的返回值。不写 `parse` 时返回第一次拿到的非空结果 |
+| `render(url, { desktop, script, timeout, parse, nativeUA })` | 用 WebView 加载页面，反复执行 `script`（默认返回整个 HTML），把结果交给 `parse(结果)`，直到它返回非空字符串，这个字符串就是 `render` 的返回值。不写 `parse` 时返回第一次拿到的非空结果。`nativeUA: true` 表示用 WebView 自带的真实 UA 打开（过人机验证时，冒充别的浏览器的 UA 会被识破） |
 | `sniff(url, { desktop, script, timeout, validate })` | 用 WebView 打开页面，嗅探页面发出的音频请求并返回它的地址。`validate(地址)` 返回 `true` 的才算；`script` 是可选的触发播放的脚本（宿主也会自动点常见播放器的播放按钮） |
 
 `timeout` 的单位是毫秒，默认 25000。
