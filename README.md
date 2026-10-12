@@ -12,7 +12,7 @@
 | 文件 | 适用 |
 |---|---|
 | [ssts-mac-5.0.dmg](https://github.com/whykang/ssts/releases/download/v5.0/ssts-mac-5.0.dmg) | Mac 版 5.0（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
-| [Sources-v5.zip](https://github.com/whykang/ssts/releases/download/v5.0/Sources-v5.zip) | 听书源插件 5.0（33 个源，Windows 版和 Mac 版通用） |
+| [Sources-v5.1.zip](https://github.com/whykang/ssts/releases/download/v5.0/Sources-v5.1.zip) | 听书源插件 5.1（33 个源，Windows 版和 Mac 版通用） |
 | [ssts-5.0.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-x64.zip) | Windows 版 5.0：绝大多数电脑（64 位 Windows 10 / 11） |
 | [ssts-5.0.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-x86.zip) | Windows 版 5.0：32 位旧电脑 |
 | [ssts-5.0.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-arm64.zip) | Windows 版 5.0：ARM 笔记本 |
@@ -20,10 +20,10 @@
 1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
    Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
 2. 程序本身不带任何听书源：下载上面的插件包（不用解压），在程序的“插件”页点“导入”选择它，或者直接把它拖进“插件”页。
-   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.zip`
+   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.1.zip`
 
 **Mac 版 5.0 的更新**：章节多的书可以分段查看、按区间下载；发现页可以只在当前这个源里搜索；定时关闭改成弹窗；
-插件 5.0 新增抖音，哔哩哔哩支持登录（收藏夹、订阅合集）和自动显示合集。
+插件 5.0 新增抖音，哔哩哔哩支持登录（收藏夹、订阅合集）和自动显示合集；插件 5.1 修复喜马拉雅有的专辑误报“已下架”、搜索搜不到。
 
 **Windows 版 5.0 的更新**：发现页可以只在当前这个源里搜索、直接去验证或去登录；章节多的书可以分段查看；能播放 FLV 直播流；
 修复了登录后仍显示没有登录、重启后登录状态丢失的问题。详见 [v5.0 的发布说明](https://github.com/whykang/ssts/releases/tag/v5.0)。
