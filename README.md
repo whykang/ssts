@@ -7,15 +7,15 @@
 
 ## 下载
 
-最新版本：**Mac 版 v5.3**、**Windows 版 v5.0**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
+最新版本：**v5.3**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
 
 | 文件 | 适用 |
 |---|---|
 | [ssts-mac-5.3.dmg](https://github.com/whykang/ssts/releases/download/v5.3/ssts-mac-5.3.dmg) | Mac 版 5.3（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
 | [Sources-v5.3.zip](https://github.com/whykang/ssts/releases/download/v5.3/Sources-v5.3.zip) | 听书源插件 5.3（34 个源，Windows 版、Mac 版通用，和安卓、iOS 也通用） |
-| [ssts-5.0.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-x64.zip) | Windows 版 5.0：绝大多数电脑（64 位 Windows 10 / 11） |
-| [ssts-5.0.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-x86.zip) | Windows 版 5.0：32 位旧电脑 |
-| [ssts-5.0.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.0/ssts-5.0.0-win-arm64.zip) | Windows 版 5.0：ARM 笔记本 |
+| [ssts-5.3.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-x64.zip) | Windows 版 5.3：绝大多数电脑（64 位 Windows 10 / 11） |
+| [ssts-5.3.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-x86.zip) | Windows 版 5.3：32 位旧电脑 |
+| [ssts-5.3.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-arm64.zip) | Windows 版 5.3：ARM 笔记本 |
 
 1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
    Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
@@ -32,8 +32,16 @@
 
 **插件 5.3**（34 个源）：新增 13听书网；爱听书、13听书网等在插件页登录后能显示“已登录”；网易云播客上千集的有声书能全部列出来（以前最多 200 集）；喜马拉雅搜索能搜到付费、会员专辑；修复爱听书有的设备上播放时报证书错误。
 
-**Windows 版 5.0 的更新**：发现页可以只在当前这个源里搜索、直接去验证或去登录；章节多的书可以分段查看；能播放 FLV 直播流；
-修复了登录后仍显示没有登录、重启后登录状态丢失的问题。详见 [v5.0 的发布说明](https://github.com/whykang/ssts/releases/tag/v5.0)。
+**Windows 版 5.3 的更新**：
+- 新增云同步：在“设置 → 云同步”里填上坚果云账号（WebDAV），书架、书架分类、播放记录、每本书听到哪里、书签可以和安卓、iOS、Mac 互相同步；书架右上角可以手动同步
+- 新增书签：播放页和详情页右上角可以在当前位置加书签、写备注，点书签就跳回那里接着听
+- 定时结束前渐弱：定时快到时最后 30 秒慢慢调低音量再暂停（设置里可以关）
+- 内置的“云听”：央广频道（中国之声、经济之声等）可以回听最近 7 天播过的节目
+- 书籍详情页点来源名字，直接跳到发现页看这个源
+- 音频服务器开了人机验证（Cloudflare）时，播放前自动通过一次
+- 修复：程序退出时会把没播放过的进度写回书架，盖掉从别的设备同步来的进度
+
+详见 [v5.3 的发布说明](https://github.com/whykang/ssts/releases/tag/v5.3)。
 
 ## 界面预览
 
