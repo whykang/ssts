@@ -1,51 +1,40 @@
 # 随身听书
 
-参照 [eprendre/tingshu](https://github.com/eprendre/tingshu) 的自定义源机制，用 WPF 编写的 Windows 听书程序。
+参照 [eprendre/tingshu](https://github.com/eprendre/tingshu) 的自定义源机制，提供 WPF 编写的 Windows 版和 SwiftUI 编写的原生 Mac 版。
 本程序只是播放器，不提供任何内容，所有音频都来自第三方网站，请支持正版。
 
 > **安卓版和 iOS 版**在这里下载：[whykang/ssts--Android](https://github.com/whykang/ssts--Android)（插件和电脑版通用）
 
 ## 下载
 
-最新版本：**v5.3**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
+最新版本：**v5.4**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
 
 | 文件 | 适用 |
 |---|---|
-| [ssts-mac-5.3.dmg](https://github.com/whykang/ssts/releases/download/v5.3/ssts-mac-5.3.dmg) | Mac 版 5.3（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
-| [Sources-v5.3.zip](https://github.com/whykang/ssts/releases/download/v5.3/Sources-v5.3.zip) | 听书源插件 5.3（34 个源，Windows 版、Mac 版通用，和安卓、iOS 也通用） |
-| [ssts-5.3.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-x64.zip) | Windows 版 5.3：绝大多数电脑（64 位 Windows 10 / 11） |
-| [ssts-5.3.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-x86.zip) | Windows 版 5.3：32 位旧电脑 |
-| [ssts-5.3.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.3/ssts-5.3.0-win-arm64.zip) | Windows 版 5.3：ARM 笔记本 |
+| [ssts-mac-5.4.dmg](https://github.com/whykang/ssts/releases/download/v5.4/ssts-mac-5.4.dmg) | Mac 版 5.4（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
+| [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Windows 版、Mac 版通用，和安卓、iOS 也通用） |
+| [ssts-5.4.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x64.zip) | Windows 版 5.4：绝大多数电脑（64 位 Windows 10 / 11） |
+| [ssts-5.4.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x86.zip) | Windows 版 5.4：32 位旧电脑 |
+| [ssts-5.4.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-arm64.zip) | Windows 版 5.4：ARM 笔记本 |
 
 1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
    Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
 2. 程序本身不带任何听书源：下载上面的插件包（不用解压），在程序的“插件”页点“导入”选择它，或者直接把它拖进“插件”页。
-   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.3.zip`
+   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.4.zip`
 
-**Mac 版 5.3 的更新**：
-- 新增云同步：在“设置 → 云同步”里填上坚果云账号（WebDAV），书架、播放记录、每本书听到哪里、书签可以和安卓、iOS 互相同步；书架右上角可以手动同步
-- 新增书签：播放页右上角可以在当前位置加书签、写备注，点书签就跳回那里接着听；详情页菜单里也能看这本书的书签
-- 新增预缓存：播放时提前把这一集和后面几集下到本机，听过去的自动删掉
-- 定时结束前渐弱：定时快到时最后 30 秒慢慢调低音量再暂停（设置里可以关）
-- 内置的“云听”：央广频道（中国之声、经济之声等）可以回听最近 7 天播过的节目
-- 书籍详情页点来源名字，直接跳到发现页看这个源
+**Mac 版 5.4**：
 
-**插件 5.3**（34 个源）：新增 13听书网；爱听书、13听书网等在插件页登录后能显示“已登录”；网易云播客上千集的有声书能全部列出来（以前最多 200 集）；喜马拉雅搜索能搜到付费、会员专辑；修复爱听书有的设备上播放时报证书错误。
+- 支持自定义全局快捷键：播放 / 暂停、上下集、快进快退、显示 / 隐藏窗口；窗口关闭后也能使用。
+- 本地文件和网盘支持按书名自动补全封面。
+- 支持逐集进度记忆，切回听过的章节可以继续上次的位置。
+- 支持书签汇总、自动预缓存、云同步和系统媒体键控制。
+- 内置电台保留“我的电台”；云听和全球电台通过 5.4 插件包导入。
 
-**Windows 版 5.3 的更新**：
-- 新增云同步：在“设置 → 云同步”里填上坚果云账号（WebDAV），书架、书架分类、播放记录、每本书听到哪里、书签可以和安卓、iOS、Mac 互相同步；书架右上角可以手动同步
-- 新增书签：播放页和详情页右上角可以在当前位置加书签、写备注，点书签就跳回那里接着听
-- 定时结束前渐弱：定时快到时最后 30 秒慢慢调低音量再暂停（设置里可以关）
-- 内置的“云听”：央广频道（中国之声、经济之声等）可以回听最近 7 天播过的节目
-- 书籍详情页点来源名字，直接跳到发现页看这个源
-- 音频服务器开了人机验证（Cloudflare）时，播放前自动通过一次
-- 修复：程序退出时会把没播放过的进度写回书架，盖掉从别的设备同步来的进度
-
-详见 [v5.3 的发布说明](https://github.com/whykang/ssts/releases/tag/v5.3)。
+Windows 版更新详见 [v5.4 发布说明](https://github.com/whykang/ssts/releases/tag/v5.4)。
 
 ## 界面预览
 
-**发现**：按源浏览分类，点标题切换听书源；内置的“云听”可以收听各地的广播电台
+**发现**：按源浏览分类，点标题切换听书源；导入云听等电台插件后可以收听广播电台
 
 ![发现](docs/images/discover-v3.webp)
 
@@ -63,7 +52,7 @@
   - **脚本插件**：一个 zip 包，里面是 `manifest.json` 和 JavaScript 脚本，用文本编辑器就能写，导入后立即生效
   - **DLL 插件**：C# 编写，引用 TingShu.Sdk 继承 SourceBase；全部听书源都打包在 `ShunSources.Plugin` 这一个插件里
   - 支持从文件 / 网址导入，或者把 zip 直接拖进“插件”页；可以启用、禁用、排序、登录，以及一键测试和调试日志
-- **广播电台**：内置“云听”，可以收听全国各地的广播电台直播；也可以自己添加电台（名称 + 直播流地址，还可以选一张图片做图标）
+- **广播电台**：云听、全球电台通过插件提供；内置“我的电台”，可以自己添加电台（名称 + 直播流地址，还可以选一张图片做图标）
 - **网盘**：内置夸克网盘、百度网盘、阿里云盘、115 网盘和 WebDAV（可以连自己的 NAS）。在“设置 → 网盘”里开启并登录成功后，才会出现在“插件”和“发现”里；每个文件夹是一本书，里面的音频是章节，可以指定只看某个目录
 - **本地文件**：在“设置 → 本地文件”里开启并选择一个文件夹后，作为一个源出现；每个子文件夹是一本书，文件夹里的图片用作封面
 - 发现（分类浏览、无限滚动）、**聚合搜索**（多源并发，按源筛选，需要人机验证的网站可以在程序里完成验证）、书架（支持自己建分类）和最近播放；发现页可以在封面网格和带简介的列表之间切换
@@ -78,7 +67,7 @@
   - 提供 x64 / x86 / ARM64 独立部署单文件版本，目标电脑无需安装 .NET
   - 首次启动按屏幕大小设置窗口尺寸，支持便携模式
 
-快捷键：`空格` 播放/暂停 · `←/→` 快退/快进 · `Ctrl+←/→` 上/下一集 · `Ctrl+F` 搜索 · `Alt+←` 或鼠标侧键返回 · 媒体键
+Windows 快捷键：`空格` 播放/暂停 · `←/→` 快退/快进 · `Ctrl+←/→` 上/下一集 · `Ctrl+F` 搜索 · `Alt+←` 或鼠标侧键返回 · 媒体键
 
 ## 插件开发
 
