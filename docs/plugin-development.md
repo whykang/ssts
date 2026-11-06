@@ -1,25 +1,14 @@
-# 插件开发指南
+# 四端通用插件开发指南（Android / iOS / Mac / Windows）
 
-程序本身不带任何听书源，所有源都由插件提供。插件有两种，可以同时安装：
+程序本身不带任何源，所有源都由插件提供。四端通用插件是一个 **ZIP 压缩包**，里面是一个 `manifest.json` 和若干 JavaScript 脚本；
+一个插件里可以注册任意多个源。在 App 的“插件”页点 `+` →“从文件导入 zip”或“从网址导入”即可安装，重新导入同名插件就是升级。
 
-| | 脚本插件 | DLL 插件 |
-|---|---|---|
-| 形式 | zip 包：`manifest.json` + 若干 `.js` | .NET 8 类库编译出的 dll |
-| 开发环境 | 任何文本编辑器 | .NET 8 SDK |
-| 权限 | 只能使用宿主提供的能力（网络请求、WebView、配置、缓存） | 普通 .NET 代码，和本程序权限相同 |
-| 更新 | 重新导入立即生效 | 替换已加载的 dll 需要重启程序 |
-| 适合 | 绝大多数网站 | 需要用到 .NET 库或很复杂的处理 |
+> Android、iOS、Mac 和 Windows 现已使用同一套 JavaScript 插件格式与接口。同一个 ZIP 插件包可在四端导入，无需分别制作平台专用版本。请保持 `manifest.json`、源的固定 ID 和接口返回结构一致。
 
-一般情况下推荐写脚本插件。两种插件里有 ID 相同的源时，以脚本插件的为准。
+本文内嵌完整书籍源、电台直播与按日期/时间排序的回听源、搜索验证和增量更新示例。
+MCP 获取指南即可读取全部代码，无需访问本地仓库文件。
 
-- [一、脚本插件](#一脚本插件)
-- [二、DLL 插件](#二dll-插件)
-
-# 一、脚本插件
-
-## 1. 插件包的结构
-
-一个 zip 包，里面是一个 `manifest.json` 和若干脚本（zip 里可以有一层目录）：
+## 1. 插件包结构
 
 ```
 MySources.zip
@@ -28,7 +17,7 @@ MySources.zip
 └─ sites.js
 ```
 
-`manifest.json`：
+zip 里可以多套一层同名目录。`manifest.json`：
 
 ```json
 {
@@ -40,468 +29,571 @@ MySources.zip
 }
 ```
 
-| 字段 | 说明 |
-|---|---|
-| `name` | 插件名，也是安装后的目录名；重新导入同名的插件会覆盖旧版本 |
-| `version` / `author` / `description` | 显示在“插件”页的“插件包”里 |
-| `scripts` | 要加载的脚本，按顺序执行，前面的脚本里定义的函数后面的可以直接用。只有一个脚本时也可以写 `"main": "index.js"`；都不写时按文件名顺序加载包里所有的 `.js` |
+`scripts` 按顺序执行，所有脚本共用一个全局作用域（前面的脚本定义的函数，后面的可以直接用）。
+没有 `manifest.json` 时，按文件名顺序执行包里的所有 `.js`。通过 MCP 创建新草稿时必须显式提供清单。
+新书源的 ID 应生成一次后固定写入脚本，不要复用本指南中的示例 ID，也不要每次运行随机生成。发布更新时提升插件版本，保留原有源 ID。
 
-一个插件包里可以注册任意多个源。
+## 2. 编写一个完整书籍源
 
-## 2. 编写一个源
+下面是可以单独作为草稿的两个文件。示例域名 `api.example.invalid` 和返回字段是教学用约定，
+制作真实插件时需替换为目标网站的公开接口及实际字段。示例所用函数全部定义在正文内，不依赖仓库里的其他脚本。
 
-脚本里调用 `registerSource({...})` 注册源，对象里的方法由宿主在需要时调用：
+`manifest.json`：
 
-```js
-registerSource({
-  id: '0f9c0b5c2d7e4c1b9a0e6f3a2b1c4d5e', // 32 位十六进制，随机生成，发布后不要改
-  name: '我的站点',
-  url: 'https://example.com',
-  description: '显示在插件页面上的说明',
-
-  search: function (keywords, page) {
-    var doc = this.host.getHtml('https://example.com/search?q=' + encodeURIComponent(keywords) + '&p=' + page);
-    var books = doc.select('.item').map(function (e) {
-      return {
-        bookUrl: e.first('a').absUrl('href'),
-        title: e.first('h3').text(),
-        coverUrl: e.first('img').absUrl('src'),
-        author: e.first('.author').text()
-      };
-    });
-    return { books: books, totalPage: regexInt(doc.first('.total').text(), /(\d+)/, page) };
-  },
-
-  categoryMenus: function () {
-    return [{ title: '分类', tabs: [{ title: '玄幻', url: 'https://example.com/list/1.html' }] }];
-  },
-
-  categoryPage: function (url) {
-    var doc = this.host.getHtml(url);
-    var books = doc.select('.item').map(function (e) {
-      return { bookUrl: e.first('a').absUrl('href'), title: e.first('h3').text(), coverUrl: e.first('img').absUrl('src') };
-    });
-    return { books: books, currentPage: 1, totalPage: 1, nextUrl: doc.first('a.next').absUrl('href') };
-  },
-
-  bookDetail: function (bookUrl, loadEpisodes, loadFullPages) {
-    var doc = this.host.getHtml(bookUrl);
-    var episodes = doc.select('#playlist a').map(function (a) {
-      return { title: a.text(), url: a.absUrl('href') };
-    });
-    return { episodes: episodes, intro: doc.first('.intro').text() };
-  },
-
-  audio: function (episodeUrl) {
-    return this.host.getHtml(episodeUrl).first('audio').absUrl('src');
-  }
-});
+```json
+{
+  "name": "GuideLibrary",
+  "version": "1.0.0",
+  "scripts": ["source.js"]
+}
 ```
 
-脚本是同步执行的：`host.getHtml` 这些请求会直接返回结果，不需要 `await` 或回调。宿主在后台线程里调用这些方法，同一个源可以同时被调用多次（比如一边加载章节一边取封面的请求头），所以不要依赖“上一次调用留下的全局变量”。
+`source.js`（假设分类接口返回 `{items:[{id,title,cover,author}],page,pages}`，
+详情接口返回 `{title,intro,cover,author,artist,status}`，章节接口返回 `{items:[{id,title}],pages}`，
+音频接口返回 `{url,type}`）：
 
-运行环境是独立的脚本引擎，支持 ES2015 及以后的大部分语法，但**没有** `window`、`document`、`fetch`、`XMLHttpRequest`、`setTimeout`；需要等待时用 `host.sleep(毫秒)`。出错时直接 `throw new Error('给用户看的提示')`。
+```js
+// GUIDE_EXAMPLE: library-source
+(function () {
+  var API = 'https://api.example.invalid';
+  var REFERER = 'https://www.example.invalid/';
+  function get(host, path) {
+    return host.getJson(API + path, { headers: { Referer: REFERER } });
+  }
+  function idFrom(url, prefix) {
+    if (url.indexOf(prefix) !== 0) throw new Error('不认识的地址');
+    return url.substring(prefix.length);
+  }
+  function result(data) {
+    var list = (data.items || []).map(function (row) {
+      return { bookUrl: 'guide:book:' + row.id, title: row.title,
+        coverUrl: row.cover || '', author: row.author || '' };
+    });
+    return { books: list, currentPage: Number(data.page) || 1,
+      totalPage: Number(data.pages) || 1 };
+  }
+  registerSource({
+    id: '615d42e6839d487aac45feb80d957e16',
+    name: '教学书籍源', url: REFERER, multipleEpisodePages: true,
+    search: function (keywords, page) {
+      return result(get(this.host, '/search?q=' + encodeURIComponent(keywords) + '&page=' + (page || 1)));
+    },
+    categoryMenus: function () {
+      return [{ title: '分类', tabs: [
+        { title: '最新', url: 'guide:category:latest:1' }
+      ] }];
+    },
+    categoryPage: function (url) {
+      var args = idFrom(url, 'guide:category:').split(':');
+      var page = Number(args[1]) || 1;
+      var data = result(get(this.host, '/categories/' + encodeURIComponent(args[0]) + '?page=' + page));
+      data.nextUrl = page < data.totalPage ? 'guide:category:' + args[0] + ':' + (page + 1) : null;
+      return data;
+    },
+    bookDetail: function (url, loadEpisodes, loadFullPages) {
+      var host = this.host, id = idFrom(url, 'guide:book:');
+      var data = get(host, '/books/' + encodeURIComponent(id));
+      var detail = { title: data.title, intro: data.intro || '', coverUrl: data.cover || '',
+        author: data.author || '', artist: data.artist || '', status: data.status || '', episodes: [] };
+      if (!loadEpisodes) return detail;
+      var page = 1, pages = 1, seen = {};
+      try {
+        do {
+          host.progress(page + ' / ' + pages);
+          var response = get(host, '/books/' + encodeURIComponent(id) + '/episodes?page=' + page);
+          pages = Number(response.pages) || 1;
+          (response.items || []).forEach(function (row) {
+            if (!row.id || seen[row.id]) return;
+            seen[row.id] = true;
+            detail.episodes.push({ title: row.title, url: 'guide:episode:' + row.id });
+          });
+          page++;
+          if (!loadFullPages) break;
+          if (page <= pages) host.sleep(150);
+        } while (page <= pages);
+      } finally { host.progress(null); }
+      return detail;
+    },
+    audio: function (url) {
+      var id = idFrom(url, 'guide:episode:');
+      // 每次播放重新取地址，避免把短期签名 URL 当作稳定章节 ID。
+      var data = get(this.host, '/episodes/' + encodeURIComponent(id) + '/audio');
+      if (!/^https?:\/\//.test(data.url || '')) throw new Error('未获取到有效音频');
+      var headers = { Referer: REFERER };
+      if (data.type === 'hls') headers['X-Media-Type'] = 'hls';
+      return { url: data.url, headers: headers };
+    }
+  });
+})();
+```
 
-### 源的属性
+`X-Media-Type: hls` 是给宿主的类型提示。普通请求选项及音频返回的 `headers` 都是对象，
+不是拼接后的字符串。不要把 `audio` 的临时地址写回 `episode.url`。只做分类浏览的源可省略 `search` 方法。
 
-| 属性 | 说明 |
+所有方法都在后台线程执行，而且是**同步**的：网络请求直接拿返回值，不需要 `await` / 回调。
+Android 端使用 Rhino（ES5 加上部分 ES6 支持）。编写四端通用插件时，建议采用 ES5 语法，避免依赖 `class`、`async`、展开运算符、可选链等语法或平台专有能力。
+脚本只能使用宿主提供的对象，不能访问 Java 类和文件系统。
+
+### 源对象的成员
+
+| 成员 | 说明 |
 |---|---|
 | `id` | 源的唯一 ID，书架、设置、章节缓存都以它为准，发布后不要改 |
-| `name` / `url` / `description` | 名称、网址、说明 |
+| `name` / `url` / `description` | 名称、网址、说明（显示在插件页面） |
 | `group` | 分组，默认“听书” |
-| `searchable` / `discoverable` | 设为 `false` 可以不参与聚合搜索 / 不出现在“发现”页。没有写 `search` 方法的源本来就不参与搜索，没有 `categoryMenus` 的不出现在“发现” |
-| `multipleEpisodePages` | 章节分多页，见下面的“章节很多的书” |
-| `enabledByDefault` | 首次导入时是否启用，默认 `true` |
-| `loginUrl` / `loginDesktop` | 需要登录的源：登录页地址，以及是否用电脑版打开。见第 5 节 |
-| `config` | 源自己的设置项，见第 5 节 |
-| `searchVerificationDesktop` / `searchDelaySeconds` | 搜索需要人机验证时用，见第 5 节 |
+| `multipleEpisodePages` | 章节分多页，见第 6 节 |
+| `enabledByDefault` | 首次导入时是否启用，默认 true |
+| `search(keywords, page)` | 搜索，返回 `{ books, totalPage }`；不知道总页数时，确定有下一页就返回 `page + 1`。不写这个方法就不参与聚合搜索 |
+| `categoryMenus()` | 分类菜单：`[{ title, tabs: [{ title, url }] }]`。不写就不出现在“发现”页 |
+| `categoryPage(url)` | 分类的一页书：`{ books, currentPage, totalPage, nextUrl }`，`nextUrl` 为空表示没有下一页 |
+| `bookDetail(bookUrl, loadEpisodes, loadFullPages)` | 详情与章节：`{ episodes, intro, author, artist, coverUrl, title, status }`，除章节外的字段不为空时会补充到书籍信息里 |
+| `audio(episodeUrl)` | 把章节地址解析成音频地址，见第 3 节。不写表示章节地址本身就是音频 |
+| `host` | 宿主注入的能力，见第 4 节 |
 
-### 源的方法
+书：`{ coverUrl, bookUrl, title, author, artist, intro, status }`，`bookUrl` 在同一个源内必须唯一。
+章节：`{ title, url, isFree, live, broadcastDate, startTime }`，`isFree` 默认 true；`live: true` 表示这是直播流（电台），宿主会按直播来播放：不显示进度、不能拖动和下载。
 
-| 方法 | 返回 |
+广播回听可提供 `broadcastDate`（`YYYY-MM-DD`，节目所属日期）和 `startTime`（Unix 毫秒，节目开始时间）。宿主优先用日期字段按天分组，直播单独显示；没有日期字段时，可用开始时间确定日期。旧云听插件的“11月1日 08:00 节目名”标题仍兼容按天分组。普通小说无需填写这两个字段。
+
+分类标签的地址不一定是网址，可以是任意字符串，宿主只会把它原样传回 `categoryPage`，例如 `my-search:关键词#1`。
+
+### 电台直播、回听及按日期/时间排列（完整示例）
+
+同一个广播源可同时提供直播与回听，返回普通的 `episodes` 数组即可：
+
+- `live: true`：直播项，单独放在直播入口，不填写回听日期和开始时间。
+- `broadcastDate`：节目所属日期，严格使用 `YYYY-MM-DD`，由电台时区和节目单决定。
+- `startTime`：实际节目开始时间，Unix **毫秒**数值；接口若返回 Unix 秒，需乘 `1000`。
+- 标题可带 `HH:mm`，便于用户查找；日期分组依靠字段，不能只在标题里写日期。
+- 插件按日期从新到旧、同日开始时间从早到晚排序后返回。宿主按天组织目录，同日保留传入顺序。
+- `group: '广播'` 用于书源分类，日期/时间字段用于章节目录分组。`endTime` 不属于此处的章节分组协议。
+- 日期字段优先；只提供开始时间时，宿主可能按设备时区推算日期。填写两者可避免跨时区时分错天。
+- 跨午夜节目使用真实开始日期计算 `startTime`，所属分组日仍以节目单给出的 `broadcastDate` 为准。
+- 稳定节目 ID 放入 `url`；播放时再解析签名地址。不要用数组下标、节目标题或临时签名 URL 标识回听节目。
+
+`manifest.json`：
+
+```json
+{"name":"GuideRadio","version":"1.0.0","scripts":["radio.js"]}
+```
+
+下面假设接口如下，真实网站需按其返回结构适配：
+
+- `/stations` → `{items:[{id,name,cover}]}`。
+- `/stations/1` → `{name,intro,cover}`。
+- `/stations/1/days` → `{days:["2026-11-06","2026-11-05"]}`。
+- `/stations/1/schedule?day=2026-11-06` → `{items:[{id,title,date:"2026-11-06",time:"08:00"}]}`；
+  `date` 是实际开始日，`day` 是节目所属分组日。若存在 `startTimeMs`，优先使用接口的毫秒时间。
+- `/stations/1/live`、`/replays/节目ID/audio` → `{url,type}`；`type` 可为 `hls`。
+
+`radio.js`：
+
+```js
+// GUIDE_EXAMPLE: radio-source
+(function () {
+  var API = 'https://radio.example.invalid';
+  var REFERER = 'https://radio.example.invalid/';
+  function get(host, path) {
+    return host.getJson(API + path, { headers: { Referer: REFERER } });
+  }
+  // 示例电台为 UTC+8，不能依赖手机/电脑当前时区，也不依赖 Date.parse 的实现差异。
+  function startMs(day, time) {
+    var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
+    var t = /^(\d{2}):(\d{2})$/.exec(time || '');
+    if (!d || !t || Number(t[1]) > 23 || Number(t[2]) > 59) throw new Error('节目时间无效');
+    var base = Date.UTC(Number(d[1]), Number(d[2]) - 1, Number(d[3]));
+    var check = new Date(base);
+    if (check.getUTCFullYear() !== Number(d[1]) || check.getUTCMonth() !== Number(d[2]) - 1 || check.getUTCDate() !== Number(d[3])) throw new Error('节目日期无效');
+    return base + (Number(t[1]) * 60 + Number(t[2]) - 8 * 60) * 60000;
+  }
+  function stationId(url) {
+    var prefix = 'guide-radio:station:';
+    if (url.indexOf(prefix) !== 0) throw new Error('电台地址无效');
+    return url.substring(prefix.length);
+  }
+  registerSource({
+    id: '48a3adfb740c4bc691ac80a03d648518',
+    name: '教学电台源', url: REFERER, group: '广播', multipleEpisodePages: true,
+    config: [{ type: 'select', key: 'days', label: '回听天数', default: '7', options: ['7', '30'] }],
+    categoryMenus: function () {
+      return [{ title: '电台', tabs: [{ title: '全部电台', url: 'guide-radio:stations' }] }];
+    },
+    categoryPage: function () {
+      var data = get(this.host, '/stations');
+      return { books: (data.items || []).map(function (row) {
+        return { title: row.name, coverUrl: row.cover || '', bookUrl: 'guide-radio:station:' + row.id };
+      }), currentPage: 1, totalPage: 1, nextUrl: null };
+    },
+    bookDetail: function (url, loadEpisodes, loadFullPages) {
+      var host = this.host, id = stationId(url);
+      var data = get(host, '/stations/' + encodeURIComponent(id));
+      var detail = { title: data.name, intro: data.intro || '', coverUrl: data.cover || '', episodes: [] };
+      if (!loadEpisodes) return detail;
+      detail.episodes.push({ title: '直播', url: 'guide-radio:live:' + id, live: true });
+      var keep = Number(host.getPref('days', '7')) === 30 ? 30 : 7;
+      var days = (get(host, '/stations/' + encodeURIComponent(id) + '/days').days || []).slice();
+      days.sort().reverse();
+      days = days.slice(0, loadFullPages ? keep : 1);
+      var replays = [], seen = {};
+      try {
+        for (var i = 0; i < days.length; i++) {
+          var day = days[i];
+          host.progress((i + 1) + ' / ' + days.length);
+          var rows = get(host, '/stations/' + encodeURIComponent(id) + '/schedule?day=' + encodeURIComponent(day)).items || [];
+          rows.forEach(function (row) {
+            if (!row.id || seen[row.id]) return;
+            seen[row.id] = true;
+            var actualDay = row.date || day;
+            var start = Number(row.startTimeMs) || startMs(actualDay, row.time);
+            replays.push({ title: (row.time ? row.time + ' ' : '') + row.title,
+              url: 'guide-radio:replay:' + row.id, live: false, isFree: true,
+              broadcastDate: day, startTime: start });
+          });
+          if (i + 1 < days.length) host.sleep(150);
+        }
+      } finally { host.progress(null); }
+      replays.sort(function (a, b) {
+        if (a.broadcastDate !== b.broadcastDate) return a.broadcastDate < b.broadcastDate ? 1 : -1;
+        return a.startTime - b.startTime;
+      });
+      detail.episodes = detail.episodes.concat(replays);
+      return detail;
+    },
+    audio: function (url) {
+      var livePrefix = 'guide-radio:live:', replayPrefix = 'guide-radio:replay:', path;
+      if (url.indexOf(livePrefix) === 0) path = '/stations/' + encodeURIComponent(url.substring(livePrefix.length)) + '/live';
+      else if (url.indexOf(replayPrefix) === 0) path = '/replays/' + encodeURIComponent(url.substring(replayPrefix.length)) + '/audio';
+      else throw new Error('节目地址无效');
+      var data = get(this.host, path);
+      if (!/^https?:\/\//.test(data.url || '')) throw new Error('原站暂无可用音频');
+      var headers = { Referer: REFERER };
+      if (data.type === 'hls') headers['X-Media-Type'] = 'hls';
+      return { url: data.url, headers: headers };
+    }
+  });
+})();
+```
+
+此例先显示直播和最新一天，后台全量加载时补齐配置范围内的其他日期。
+例如输入节目单包含 11 月 6 日 09:00、08:00 及 11 月 5 日 18:00，返回顺序为：
+直播 → 11 月 6 日组（08:00、09:00）→ 11 月 5 日组（18:00）。
+旧插件未提供日期字段时继续沿用宿主原有目录逻辑；旧云听的日期标题兼容保留。新插件应显式填字段。
+
+## 3. 音频提取
+
+`audio(episodeUrl)` 返回音频地址字符串，或者 `{ url, headers }`。常见写法：
+
+| 场景 | 写法 |
 |---|---|
-| `search(keywords, page)` | `{ books, totalPage }`。不知道总页数时，确定有下一页就返回 `page + 1` |
-| `categoryMenus()` | `[{ title, tabs: [{ title, url }] }]`。标签的 `url` 不一定是网址，可以是任意字符串，宿主只会把它原样传回 `categoryPage` |
-| `categoryPage(url)` | `{ books, currentPage, totalPage, nextUrl }`，`nextUrl` 为空表示没有下一页 |
-| `bookDetail(bookUrl, loadEpisodes, loadFullPages)` | `{ episodes, intro, author, artist, coverUrl, title, status }`。除 `episodes` 外的字段不为空时会补充到书籍信息里 |
-| `audio(episodeUrl)` | 可以播放的音频地址；需要请求头时返回 `{ url, headers }`。不写这个方法时，章节地址本身就是音频地址 |
+| 章节地址本身就是音频 | 不写 `audio` |
+| 从章节网页的 HTML 里取 | `this.host.getHtml(url).first('audio').absUrl('src')` |
+| 章节地址返回 JSON | `str(this.host.getJson(url), 'data.url')` |
+| 要执行页面脚本才有地址 | `this.host.render(url, { desktop, script, parse })`：用 WebView 打开页面，反复执行 `script`（默认返回整个 HTML），直到 `parse(结果)` 返回非空 |
+| 嗅探页面发出的音频请求 | `this.host.sniff(url, { desktop, validate, script })`：`validate(地址)` 判断哪个请求是音频（默认按扩展名），`script` 是可选的触发播放脚本（宿主也会自动点击常见播放器的播放按钮） |
 
-一本书（`books` 里的每一项）：`bookUrl`（必填）、`title`、`coverUrl`、`author`、`artist`（演播）、`intro`、`status`。
+播放地址带时效签名的，就在 `audio` 里每次现取。WebView 方式比普通请求慢得多，能用普通请求就不要用 WebView。
+取不到时直接 `throw new Error('原因')`，原因会显示给用户。
 
-一集（`episodes` 里的每一项）：`title`、`url`（必填），以及可选的 `isFree`（`false` 表示付费章节，列表里显示一把锁）和 `live`（`true` 表示直播流：不能拖动、不记进度）。
+播放时宿主会附带 UA 和 `audioHeaders` 提供的请求头；播放前会先探测地址，404 / 410 会提示“音频文件已失效”。
 
-## 3. 宿主能力（this.host）
+### 常见音频解析代码（四选一合并到源的 audio）
 
-每个源有自己的 `host`，在方法里用 `this.host` 取得。
+下面的四个方法各自可用于源的 `audio`，例如 `audio: GuideAudioExtractors.jsonAudio`。
+网页选择器、JSON 字段及媒体域名需按真实站点修改，优先使用普通 HTTP 请求。
 
-### 网络请求
+```js
+// GUIDE_EXAMPLE: audio-extractors
+var GuideAudioExtractors = (function () {
+  function wrapped(url, referer, type) {
+    if (!/^https?:\/\//.test(url || '')) throw new Error('未获取到可用音频');
+    var headers = { Referer: referer };
+    if (type === 'hls' || /\.m3u8(?:[?#]|$)/i.test(url)) headers['X-Media-Type'] = 'hls';
+    return { url: url, headers: headers };
+  }
+  return {
+    htmlAudio: function (episodeUrl) {
+      var doc = this.host.getHtml(episodeUrl);
+      return wrapped(doc.first('audio[src], audio source[src]').absUrl('src'), episodeUrl);
+    },
+    jsonAudio: function (episodeUrl) {
+      var data = this.host.getJson(episodeUrl);
+      // 示例接口：{data:{url:'https://...',type:'hls'}}。
+      return wrapped(data.data && data.data.url, episodeUrl, data.data && data.data.type);
+    },
+    renderedAudio: function (episodeUrl) {
+      var host = this.host;
+      var url = host.render(episodeUrl, { desktop: false, timeout: 20000,
+        parse: function (html) {
+          return host.parseHtml(html, episodeUrl).first('audio[src], audio source[src]').absUrl('src') || null;
+        }
+      });
+      return wrapped(url, episodeUrl);
+    },
+    sniffedAudio: function (episodeUrl) {
+      var url = this.host.sniff(episodeUrl, { desktop: false, timeout: 20000,
+        validate: function (candidate) {
+          // 按真实媒体域名及请求特征筛选，避免把广告音频当成节目。
+          return /^https:\/\/media\.example\.invalid\/.*\.(?:mp3|m4a|m3u8)(?:[?#]|$)/i.test(candidate);
+        }
+      });
+      return wrapped(url, episodeUrl);
+    }
+  };
+})();
+```
 
-| 方法 | 说明 |
+## 4. 宿主能力（this.host）
+
+| 成员 | 说明 |
 |---|---|
-| `getString(url, options)` | 请求文本，自动识别 GBK / UTF-8 等编码。非 2xx 状态码会抛出错误，错误对象上有 `status`（状态码） |
-| `getHtml(url, options)` | 请求并解析成 HTML 元素，见第 4 节 |
-| `getJson(url, options)` | 请求并解析 JSON，兼容 JSONP |
-| `getStrings(urls, options, concurrency)` | 并发请求多个地址，返回文本数组，失败的位置是 `null`。`options` 可以是一份，也可以是和 `urls` 一一对应的数组；`concurrency` 默认 4 |
-| `fetch(url, options)` | 返回 `{ status, body }`，非 2xx 状态码不会抛出错误 |
-| `status(url, options)` | 只返回状态码，不下载内容 |
+| `getString(url, options)` | 请求文本，自动识别 GBK / UTF-8 等编码；非 2xx 状态码会抛出错误，`e.status` 是状态码 |
+| `getHtml(url, options)` | 请求并解析 HTML，返回文档元素（见第 7 节） |
+| `getJson(url, options)` | 请求并解析 JSON（兼容 JSONP） |
+| `getStrings(urls, options, concurrency)` | 并发请求多个地址，返回文本数组，失败的位置是 `null` |
 | `finalUrl(url, options)` | 跟随跳转后的最终地址 |
+| `fetch(url, options)` | 请求并返回 `{ status, body }`；和 `getString` 不同，非 2xx 状态码不会抛出错误（有的接口把错误原因放在响应内容里） |
+| `status(url, options)` | 只返回 HTTP 状态码，不下载内容（探测音频地址能不能访问时用，记得带上 `Range` 头） |
 | `parseHtml(html, baseUrl)` | 解析一段 HTML |
-| `cookies(url)` | 这个地址现在会带上的 Cookie，格式 `a=1; b=2`（包括在登录窗口里登录后得到的） |
-| `userAgent(desktop)` | 用户在设置里配置的电脑版 / 手机版 UA |
-| `webViewUA()` | WebView 自带的真实 UA（不是设置里那两个）。过网站的人机验证后，要用同一个 UA 发请求时用它；旧版程序没有这个能力时返回空字符串 |
+| `render(url, { desktop, script, parse, timeout })` | 用 WebView 加载页面，见第 3 节。`timeout` 单位毫秒，默认 25000 |
+| `sniff(url, { desktop, validate, script, timeout })` | 用 WebView 打开页面并嗅探音频地址 |
+| `cookies(url)` | 某个地址当前的 Cookie，格式 `a=1; b=2` |
+| `getPref(key, 默认值)` / `setPref(key, value)` | 源自己的配置，宿主会持久保存 |
+| `toast(message)` | 界面提示 |
+| `log(message)` | 调试日志，显示在插件页面的“日志”里 |
+| `progress(info)` | 加载多页章节时报告进度（例如 `"3 / 20"`），传 `null` 表示结束 |
+| `sleep(毫秒)` | 等待 |
+| `readCache(name)` / `writeCache(name, text)` / `cacheAge(name)` | 源独立的缓存文件；`cacheAge` 返回距今多少毫秒，不存在为 -1 |
+| `base64Decode` / `base64Encode` / `md5` / `sha256` / `uuid()` / `htmlDecode` | 常用工具 |
+| `aesEcbDecrypt(data, keyHex)` | AES-ECB 解密（PKCS7 填充）：`data` 是 base64，`keyHex` 是十六进制密钥，返回文本；失败返回空字符串 |
+| `userAgent(desktop)` | 用户在设置里配置的 UA |
 
-`options` 的字段：
+请求选项 `options`：
 
 | 字段 | 说明 |
 |---|---|
-| `desktop` | `true` 用电脑版 UA，默认用手机版 |
+| `desktop` | true 用电脑版 UA，false（默认）用手机版 UA |
 | `method` / `body` / `contentType` | POST 等请求，`body` 默认按表单（`application/x-www-form-urlencoded`）发送 |
-| `headers` | 额外请求头，例如 `{ Referer: 'https://example.com/' }` |
-| `encoding` | 强制按指定编码解码（例如 `'gbk'`），默认自动判断 |
+| `headers` | 额外请求头，例如 `Referer`、`Origin`、`Cookie` |
+| `encoding` | 强制按指定编码解码（例如 `"gbk"`），默认自动判断 |
 
-### WebView
+**Cookie 是共享的**：普通请求和 App 里的 WebView（登录页、验证页、`render` / `sniff`）用同一份 Cookie，
+用户登录或通过人机验证之后，后续请求自动带上，不需要额外处理。
 
-用来处理“要执行页面里的脚本才有内容”的网站。需要用户电脑上有 WebView2 运行时，速度也比普通请求慢，能用普通请求就不要用。
+## 5. 可选成员
 
-| 方法 | 说明 |
+| 成员 | 作用 |
 |---|---|
-| `render(url, { desktop, script, timeout, parse, nativeUA })` | 用 WebView 加载页面，反复执行 `script`（默认返回整个 HTML），把结果交给 `parse(结果)`，直到它返回非空字符串，这个字符串就是 `render` 的返回值。不写 `parse` 时返回第一次拿到的非空结果。`nativeUA: true` 表示用 WebView 自带的真实 UA 打开（过人机验证时，冒充别的浏览器的 UA 会被识破） |
-| `sniff(url, { desktop, script, timeout, validate })` | 用 WebView 打开页面，嗅探页面发出的音频请求并返回它的地址。`validate(地址)` 返回 `true` 的才算；`script` 是可选的触发播放的脚本（宿主也会自动点常见播放器的播放按钮） |
-
-`timeout` 的单位是毫秒，默认 25000。
-
-```js
-audio: function (episodeUrl) {
-  return this.host.sniff(episodeUrl, { validate: function (u) { return /\.(mp3|m4a)(\?|$)/.test(u); } });
-}
-```
-
-### 配置、缓存和其它
-
-| 方法 | 说明 |
-|---|---|
-| `getPref(key, 默认值)` / `setPref(key, value)` | 源自己的配置，宿主会持久保存；每个源的配置互相独立 |
-| `readCache(name)` / `writeCache(name, text)` / `cacheAge(name)` | 源自己的缓存文件。`cacheAge` 返回距今多少毫秒，不存在返回 -1 |
-| `toast(message)` | 界面提示 |
-| `log(message)` | 调试日志，显示在“插件 → 调试日志”里 |
-| `progress(info)` | 加载多页章节时报告进度（例如 `'3 / 20'`），传 `null` 表示结束 |
-| `sleep(ms)` | 等待 |
-| `md5` / `sha256` / `base64Encode` / `base64Decode` / `uuid` / `htmlDecode` | 常用的编码和摘要 |
-| `aesEcbDecrypt(data, key)` | AES-ECB 解密：`data` 是 base64，`key` 是十六进制，返回文本，失败返回空字符串 |
-| `sourceId` | 这个源的 ID |
-
-## 4. HTML 与 JSON 帮助方法
-
-`getHtml` / `parseHtml` 返回的是元素对象，用 CSS 选择器查找：
-
-| 方法 | 说明 |
-|---|---|
-| `select(selector)` | 所有匹配的元素，是普通的数组，可以直接 `map` / `filter` |
-| `first(selector)` | 第一个匹配的元素。找不到时返回一个“空元素”，继续调用它的方法不会出错，只是都返回空；用 `exists()` 判断有没有找到 |
-| `text()` / `ownText()` | 元素里的文字 / 只算元素自己的文字，不含子元素 |
-| `attr(name)` | 属性值，没有时为空字符串 |
-| `absUrl(name)` | 把 `href`、`src` 这类属性补成完整的网址 |
-| `html()` / `outerHtml()` | 里面的 / 包括自己的 HTML |
-| `tag()` / `hasClass(name)` | 标签名 / 有没有某个 class |
-| `children()` / `parent()` / `byId(id)` | 子元素数组 / 父元素 / 按 id 在整个文档里找 |
-
-处理 JSON 时有几个全局函数，路径不存在时不会出错：
-
-| 函数 | 说明 |
-|---|---|
-| `at(obj, 'data.list.0.name')` | 按路径取值，数组下标可以是负数（`-1` 是最后一个），不存在返回 `null` |
-| `str(obj, path)` | 取成字符串，不存在返回空字符串 |
-| `int(obj, path, 默认值)` | 取成整数 |
-| `items(obj, path)` | 取数组，不存在返回空数组 |
-| `regexInt(text, /第(\d+)页/, 默认值)` | 用正则取第一个分组并转成整数 |
-| `parseJson(text)` | 解析 JSON，兼容 JSONP |
-
-```js
-var json = this.host.getJson('https://example.com/api/search?q=' + encodeURIComponent(keywords));
-var books = items(json, 'data.list').map(function (b) {
-  return { bookUrl: 'https://example.com/book/' + str(b, 'id'), title: str(b, 'name'), coverUrl: str(b, 'cover') };
-});
-```
-
-## 5. 可选功能
-
-在源里加上对应的属性或方法，宿主会自动识别：
-
-| 写法 | 作用 |
-|---|---|
-| `audioHeaders(audioUrl)` | 播放音频时附加的请求头（例如 `Referer` 防盗链），返回 `{ 名: 值 }`。也可以直接在 `audio` 里返回 `{ url, headers }` |
-| `coverHeaders(coverUrl)` | 加载封面时附加的请求头。先判断封面地址是不是自己网站的，不是就返回 `null` |
-| `loginUrl` + `loginDesktop` | 插件页面展开这个源后会出现“登录”，登录在弹出的网页窗口里完成，之后普通请求会自动带上登录后的 Cookie |
-| `checkLogin()` | 确认登录状态：已登录返回昵称（拿不到昵称时返回空字符串），没登录时抛出错误，提示里要带“登录”两个字。登录窗口关闭后宿主会调用它，并在插件页面显示“已登录 · 昵称” |
-| `config` | 源自己的设置项，插件页面出现“设置”。值用 `this.host.getPref(key)` 读取，都是字符串 |
-| `searchVerificationUrl(keywords)` | 搜索需要人机验证的网站：返回验证页面的地址。搜索失败或没有结果时，搜索页会在这个源旁显示“验证”，用户在弹出的网页里通过验证后重新搜索。`searchVerificationDesktop` 决定用不用电脑版打开（默认 `true`），`searchDelaySeconds` 用于网站限制两次搜索最小间隔的情况 |
-| `updateEpisodes(bookUrl, known)` | 增量更新章节，见下面 |
+| `audioHeaders(audioUrl)` | 播放音频时附加请求头（例如 `Referer` 防盗链），返回 `{ ... }` 或 `null` |
+| `coverHeaders(coverUrl)` | 加载封面时附加请求头，返回 `{ ... }` 或 `null`。先判断封面地址属于自己 |
+| `loginUrl` / `loginDesktop` | 需要登录的源：插件页面会出现“登录”按钮，在 App 内的网页里完成登录 |
+| `checkLogin()` | 配合 `loginUrl`：登录页关闭后宿主会调用它确认是否登录成功。已登录时返回昵称（或 `true`），插件页会显示“已登录”；没登录时抛出错误。不写这个方法，宿主就不知道登录状态，只显示“登录”按钮 |
+| `searchVerificationUrl(keywords)` | 搜索需要人机验证：搜索失败或没有结果时，搜索页会出现“验证”按钮，验证页识别到书籍结果后直接返回；无法识别时由用户手动完成并仅重搜一次。配合 `searchVerificationDesktop`（默认 true）、`searchDelaySeconds`（网站限制两次搜索最小间隔时用） |
+| `searchVerificationResult(html, url, keywords)` | 可选：只解析当前验证页的 HTML，明确识别到结果时返回 `{ verified: true, books, totalPage }`，否则返回 `null`。不发起网络请求；结果会直接展示，无需再次搜索。完整示例见下文 |
+| `updateEpisodes(bookUrl, known)` | 增量更新章节，见第 6 节 |
+| `config` | 设置项数组，插件页面会出现“设置”按钮：`{ type: 'text' | 'switch' | 'select', key, label, default, options }`，值用 `this.host.getPref(key)` 读取 |
 | `onPlaybackState(state)` | 接收播放状态：`playing` / `paused` / `stopped` / `error` |
 
-设置项的写法：
+### 搜索验证后直接返回结果（可合并的方法对象）
+
+下面定义的 `GuideVerifiedSearch` 不额外注册源。将它的四个方法/属性合并进真实源的
+`registerSource({...})`，并替换域名和选择器即可。示例结果结构是
+`#results .book` 内含 `a.title`、`img`，下一页由 `a.next` 标识。
 
 ```js
-config: [
-  { key: 'quality', label: '音质', type: 'select', options: ['标准', '高品质'], default: '标准' },
-  { key: 'skipAds', label: '跳过广告', type: 'switch', default: 'true' },
-  { key: 'token', label: 'Token', type: 'text', default: '' }
-]
-```
-
-### 章节很多的书
-
-章节分很多页的网站，把 `multipleEpisodePages` 设为 `true`。第一次打开一本书时，宿主会先用 `loadFullPages = false` 调用 `bookDetail`，这时只取第一页马上返回，让用户能立刻开始听；随后再用 `loadFullPages = true` 调用一次，取全部章节。加载过程中用 `this.host.progress('3 / 20')` 报告进度，结束时传 `null`。
-
-书架里的书再次打开时，如果源提供了 `updateEpisodes(bookUrl, known)`，宿主会把已经缓存的章节（`known`，按网站上的顺序）传进来，只需要取新增的部分，返回完整的 `{ episodes, ... }`；返回 `null` 表示这次没法增量更新，宿主会改用 `bookDetail` 整本重新加载。
-
-网站限制访问频率时，在多页之间用 `this.host.sleep` 隔开，不要并发着抓。
-
-## 6. 调试
-
-- “插件”页展开一个源，点“测试”：依次测试分类、搜索、详情和音频解析，结果和 `host.log` 的输出都在调试日志里（“插件”页右上角的文档图标）；
-- 脚本有语法错误或加载时出错，导入会失败并提示第几行；已经安装的旧版本不会被覆盖；
-- 修改脚本后重新导入 zip 即可，立即生效，不用重启。也可以点“导入 → 打开插件目录”，直接改安装好的脚本，改完重启程序。
-
-程序内置的广播电台（云听、我的电台）就是一个脚本插件，用到的都是本文介绍的写法：接口签名、并发请求、缓存，以及带 `live` 标记的直播流。
-
-## 7. 打包与安装
-
-把 `manifest.json` 和脚本一起压缩成 zip，然后在“插件”页点“导入 → 从文件导入 zip…”，或者把 zip 直接拖到“插件”页上；也可以用“从网址导入”，填 zip 的下载地址。
-
-导入后的位置：`%AppData%\TingShu\plugins\插件名\`（便携模式为程序目录下 `data\plugins`）。在“插件包”里点删除会移除整个插件和它包含的所有源；只想停用某个源，关掉它的开关即可。
-
-脚本插件只能通过宿主提供的能力访问网络，但它拿得到你在登录窗口里登录后的 Cookie。**只导入你信任的来源提供的插件**。
-
-# 二、DLL 插件
-
-DLL 插件是一个普通的 .NET 8 类库，引用 `TingShu.Sdk`，继承 `SourceBase` 编写；一个插件程序集里可以包含任意多个源。
-
-完整示例：[sources/ShunSources.Plugin](../sources/ShunSources.Plugin)，一个插件里包含了 19 个源，覆盖了本文提到的大部分写法。
-
-## 1. 创建项目
-
-```bash
-dotnet new classlib -n MySources -f net8.0
-```
-
-编辑 `MySources.csproj`：
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    <!-- 显示在插件页面上 -->
-    <Version>1.0.0</Version>
-    <Company>作者名</Company>
-  </PropertyGroup>
-  <ItemGroup>
-    <!-- 引用发布目录 sdk 文件夹中的 TingShu.Sdk.dll；Private=false 表示不复制（由宿主提供） -->
-    <Reference Include="TingShu.Sdk">
-      <HintPath>path\to\sdk\TingShu.Sdk.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <!-- HTML 解析器，同样由宿主提供，不要复制 -->
-    <PackageReference Include="AngleSharp" Version="1.8.3" ExcludeAssets="runtime" />
-  </ItemGroup>
-</Project>
-```
-
-在本解决方案内开发时，也可以像示例插件一样直接 `ProjectReference` 到 `TingShu.Sdk`（加 `Private=false`、`ExcludeAssets=runtime`）。
-
-`TingShu.Sdk` 和 `AngleSharp` 由宿主提供并共享，插件目录里不要放这两个 dll；插件自己的其它依赖放在插件 dll 旁边即可。
-
-## 2. 编写一个源
-
-继承 `SourceBase`，需要一个公开的无参构造函数：
-
-```csharp
-using TingShu.Sdk;
-
-public sealed class MySite : SourceBase
-{
-    public override string Id => "0f9c0b5c2d7e4c1b9a0e6f3a2b1c4d5e"; // 用 Guid.NewGuid().ToString("N") 生成，发布后不要改
-    public override string Name => "我的站点";
-    public override string Url => "https://example.com";
-
-    public override async Task<SearchResult> SearchAsync(string keywords, int page, CancellationToken ct)
-    {
-        var doc = await Host.GetHtmlAsync($"https://example.com/search?q={Uri.EscapeDataString(keywords)}&p={page}", ct: ct);
-        var books = doc.Select(".item").Select(e => new Book(
-            coverUrl: e.SelectFirst("img").AbsUrl("src"),
-            bookUrl: e.SelectFirst("a").AbsUrl("href"),
-            title: e.SelectFirst("h3").Text())).ToList();
-        var total = int.TryParse(doc.SelectFirst(".total").Text(), out var t) ? t : page;
-        return new SearchResult(books, total);
+// GUIDE_EXAMPLE: verified-search
+var GuideVerifiedSearch = (function () {
+  var SITE = 'https://search.example.invalid/';
+  function urlFor(keywords, page) {
+    return SITE + 'search?q=' + encodeURIComponent(keywords) + '&page=' + (page || 1);
+  }
+  function parse(host, html, url, page) {
+    var document = host.parseHtml(html, url), books = [], seen = {};
+    document.select('#results .book').forEach(function (item) {
+      var a = item.first('a.title'), bookUrl = a.absUrl('href');
+      if (bookUrl.indexOf(SITE) !== 0 || !a.text() || seen[bookUrl]) return;
+      seen[bookUrl] = true;
+      books.push({ title: a.text(), bookUrl: bookUrl, coverUrl: item.first('img').absUrl('src') });
+    });
+    return { books: books, totalPage: document.first('a.next').exists() ? page + 1 : page };
+  }
+  return {
+    searchVerificationDesktop: false,
+    searchVerificationUrl: function (keywords) { return urlFor(keywords, 1); },
+    search: function (keywords, page) {
+      page = page || 1;
+      var url = urlFor(keywords, page), html = this.host.getString(url);
+      var result = parse(this.host, html, url, page);
+      if (!result.books.length && this.host.parseHtml(html, url).first('.captcha').exists()) {
+        throw new Error('请点击该书源旁的验证按钮');
+      }
+      return result;
+    },
+    searchVerificationResult: function (html, url, keywords) {
+      if (url.indexOf(SITE + 'search?') !== 0) return null;
+      var q = /[?&]q=([^&#]*)/.exec(url), value;
+      if (!q) return null;
+      try { value = decodeURIComponent(q[1].replace(/\+/g, ' ')); }
+      catch (e) { return null; }
+      if (value !== keywords) return null;
+      var page = Number((/[?&]page=(\d+)/.exec(url) || [0, 1])[1]);
+      var result = parse(this.host, html, url, page);
+      if (!result.books.length) return null;
+      // 只解析可见验证页；此方法不要调用 getString/getJson/render 或重新提交搜索。
+      return { verified: true, books: result.books, totalPage: result.totalPage };
     }
-
-    public override async Task<BookDetail> GetBookDetailAsync(string bookUrl, bool loadEpisodes, bool loadFullPages, CancellationToken ct)
-    {
-        var doc = await Host.GetHtmlAsync(bookUrl, ct: ct);
-        var episodes = doc.Select("#playlist a").Select(a => new Episode(a.Text(), a.AbsUrl("href"))).ToList();
-        return new BookDetail(episodes, doc.SelectFirst(".intro").Text());
-    }
-
-    public override AudioExtractor GetAudioExtractor() =>
-        AudioExtractor.Html(doc => doc.SelectFirst("audio")?.AbsUrl("src"));
-}
+  };
+})();
 ```
 
-所有方法都在后台线程执行，网络请求直接 `await` 即可。请把 `ct` 传给每个请求：用户离开页面或超时时会取消。
-
-### SourceBase 成员
-
-| 成员 | 说明 |
-|---|---|
-| `Id` | 源的唯一 ID，书架、设置、章节缓存都以它为准，发布后不要改 |
-| `Name` / `Url` / `Description` | 名称、网址、说明（显示在插件页面） |
-| `Group` | 分组，默认“听书” |
-| `IsSearchable` / `IsDiscoverable` | 是否参与聚合搜索 / 是否出现在“发现”页，默认都是 true |
-| `IsMultipleEpisodePages` | 章节分多页，见第 6 节 |
-| `EnabledByDefault` | 首次导入时是否启用，默认 true |
-| `SearchAsync(keywords, page, ct)` | 搜索，返回 `SearchResult(books, totalPage)`；不知道总页数时，确定有下一页就返回 `page + 1` |
-| `GetCategoryMenusAsync(ct)` | 分类菜单：`CategoryMenu(标题, CategoryTab[])`，每个标签带一个地址 |
-| `GetCategoryPageAsync(url, ct)` | 分类的一页书：`CategoryPage(books, currentPage, totalPage, currentUrl, nextUrl)`，`nextUrl` 为空表示没有下一页 |
-| `GetBookDetailAsync(bookUrl, loadEpisodes, loadFullPages, ct)` | 详情与章节列表。`BookDetail` 中除章节外的字段（简介、作者、演播、封面、标题、状态）不为空时会补充到书籍信息里 |
-| `GetAudioExtractor()` | 把章节地址解析成音频地址的方式，见第 3 节 |
-| `Host` | 宿主提供的能力，见第 4 节 |
-
-分类标签的地址不一定是网址，可以是任意字符串，宿主只会把它原样传回 `GetCategoryPageAsync`，例如 `my-search:关键词#1`。
-
-## 3. 音频提取器
-
-`GetAudioExtractor()` 决定章节地址（`Episode.Url`）如何变成可播放的音频地址：
-
-| 写法 | 适用场景 |
-|---|---|
-| `AudioExtractor.Direct` | 章节地址本身就是音频 |
-| `AudioExtractor.Html(doc => ..., desktop)` | 请求章节页面，从 HTML 里取 |
-| `AudioExtractor.Json(json => ..., desktop)` | 请求章节地址返回 JSON，从中取 |
-| `AudioExtractor.WebView(result => ..., desktop, script)` | 用 WebView 打开页面，反复执行 `script`，直到 `result` 解析出地址（默认脚本返回整个 HTML） |
-| `AudioExtractor.WebViewSniff(validate, desktop, script)` | 用 WebView 打开页面，嗅探页面发出的音频请求；`validate` 判断哪个请求是音频，`script` 是可选的触发播放脚本（宿主也会自动点击常见播放器的播放按钮） |
-| `AudioExtractor.Custom(async (url, ct) => ...)` | 完全自己处理，可以组合普通请求、`Host.RenderAsync`、`Host.SniffMediaAsync` |
-
-播放地址带时效签名的，用 `Custom` 在播放时现取。WebView 类方式需要用户电脑上有 WebView2 运行时，速度也比普通请求慢，能用普通请求就不要用 WebView。
-
-宿主通过本地代理播放音频，会附带 UA、`IAudioHeaders` 提供的请求头，并且支持拖动进度；服务器不支持分段下载时，代理会在后台下载整个文件再按需提供。宿主播放前会先探测地址，404 / 410 会提示“音频文件已失效”。
-
-## 4. 宿主能力（Host）
-
-| 成员 | 说明 |
-|---|---|
-| `GetStringAsync(url, options, ct)` | 请求文本，自动识别 GBK / UTF-8 等编码；非 2xx 状态码会抛出 `HttpRequestException`，消息里带状态码 |
-| `GetHtmlAsync(url, options, ct)` | 请求并解析 HTML，文档已设置 BaseUrl，可以直接 `AbsUrl("href")` |
-| `GetJsonAsync(url, options, ct)` | 请求并解析 JSON |
-| `ParseHtml(html, baseUrl)` | 解析一段 HTML |
-| `RenderAsync(url, desktop, script, timeout, ct)` | 用 WebView 加载页面，等 `script` 返回非空结果（默认返回整个 HTML），适合要执行 JS 才有内容的页面 |
-| `SniffMediaAsync(url, desktop, validate, timeout, ct, script)` | 用 WebView 打开页面并嗅探音频地址 |
-| `GetWebViewCookiesAsync(url)` | 读取 WebView 中的 Cookie（例如登录后），格式 `a=1; b=2` |
-| `GetPref(key)` / `SetPref(key, value)` | 源自己的配置，宿主会持久保存 |
-| `Toast(message)` | 界面提示 |
-| `Log(message)` | 调试日志，显示在“插件 → 调试日志”里 |
-| `ReportProgress(info)` | 加载多页章节时报告进度（例如 `"3 / 20"`），传 `null` 表示结束 |
-| `GetCacheDir(subDir)` | 源独立的缓存目录 |
-| `Http` | 宿主共享的 `HttpClient`（自动解压、共享 Cookie、跟随系统代理） |
-| `DesktopUserAgent` / `MobileUserAgent` | 用户在设置里配置的 UA |
-
-`RequestOptions` 常用字段：
-
-| 字段 | 说明 |
-|---|---|
-| `Desktop` | true 用电脑版 UA，false（默认）用手机版 UA；`RequestOptions.Pc` / `RequestOptions.Mobile` 是快捷写法 |
-| `Method` / `Body` / `ContentType` | POST 等请求，`Body` 默认按表单（`application/x-www-form-urlencoded`）发送 |
-| `Headers` | 额外请求头，例如 `Referer`、`Origin` |
-| `Encoding` | 强制按指定编码解码（例如 `"gbk"`），默认自动判断 |
-| `UseWebViewCookies` | 把 WebView 里的 Cookie（登录、人机验证之后）同步给这次请求 |
-
-## 5. 可选接口
-
-按需实现，宿主会自动识别：
-
-| 接口 | 作用 |
-|---|---|
-| `IAudioHeaders` | 播放音频时附加请求头（例如 `Referer` 防盗链） |
-| `ICoverHeaders` | 加载封面时附加请求头。务必先判断封面地址属于自己，再修改 headers 并返回 true |
-| `ILoginSource` | 需要登录的源：提供 `LoginUrl`（`LoginDesktop` 决定用电脑版还是手机版打开）。插件页面会出现“登录”按钮，登录在 WebView 中完成，之后请求时用 `UseWebViewCookies` 带上 Cookie |
-| `ISearchVerification` | 搜索需要人机验证：搜索失败或没有结果时，搜索页在这个源旁显示“验证”按钮，用户在弹出的网页里通过验证后窗口自动关闭并重新搜索。`IsVerificationPassed(标题)` 判断是否已通过，`SearchDelaySeconds` 用于网站限制两次搜索最小间隔的情况 |
-| `IIncrementalEpisodes` | 增量更新章节，见第 6 节 |
-| `IConfigurableSource` | 插件页面出现“设置”按钮，`GetConfigItems()` 返回设置项：`ConfigItem.Text` / `Switch` / `Select` / `Button`。值用 `Host.GetPref(key)` 读取 |
-| `ICertificateNameMismatchHosts` | 网站证书有效但域名不匹配（例如 CDN 配置错误）时，声明这些主机名。宿主只对这些主机、且只在“仅域名不匹配”时放行，其它证书错误仍会拒绝 |
-| `IPlaybackStateListener` | 接收播放状态：`playing` / `paused` / `stopped` / `error` |
-| `ISourceProvider` | 插件入口：程序集里有实现它的类时，宿主只加载它返回的源；没有时自动加载所有公开的 `SourceBase` 子类 |
+不要仅凭标题变化、验证码输入框消失或出现“成功”文字就返回 `verified: true`。
+明确解析到本次关键词的书籍结果再返回；即使页面残留验证码控件，也可接受这些真实结果。
+没有确定结果时返回 `null`，由宿主保留验证页或处理用户的手动完成操作，插件不发起循环搜索。
 
 ## 6. 章节很多的书
 
 ### 分页章节
 
-章节分很多页的网站，把 `IsMultipleEpisodePages` 设为 true，并按 `loadFullPages` 区分：
+章节分很多页的网站，把 `multipleEpisodePages` 设为 true，并按 `loadFullPages` 区分：
 
 - `loadFullPages == false`：只返回第一页章节，要快；
-- `loadFullPages == true`：返回全部章节，逐页加载时用 `Host.ReportProgress($"{i} / {total}")` 报告进度，结束时 `Host.ReportProgress(null)`。
+- `loadFullPages == true`：返回全部章节，逐页加载时用 `host.progress(i + ' / ' + total)` 报告进度，结束时 `host.progress(null)`（放在 `finally` 里）。
 
-第一次打开这类书（本地没有章节缓存）时，宿主会先用 `false` 取第一页立即显示，用户可以马上开始播放，再用 `true` 在后台加载全部章节。
+第一次打开这类书时，宿主会先用 `false` 取第一页立即显示，用户可以马上开始播放，再用 `true` 在后台加载全部章节。
 
-### 增量更新（IIncrementalEpisodes）
+### 增量更新（updateEpisodes）
 
-宿主会为书架上和播放过的书缓存章节列表。默认每次打开详情页都会整本重新加载；章节很多、或者网站限制访问频率时，实现 `IIncrementalEpisodes`，宿主在有缓存时改为调用：
+宿主会为书架上和播放过的书缓存章节列表。默认每次打开详情页都会整本重新加载；章节很多、或者网站限制访问频率时，
+实现 `updateEpisodes(bookUrl, known)`：`known` 是缓存的章节（按网站原始顺序），返回包含完整章节列表的详情；返回 `null` 表示无法增量更新，宿主会退回整本加载。
+可将下面的 `GuideIncrementalUpdate` 方法加入源对象。这里假设更新接口返回
+`{reset:false,episodes:[{title,url}]}`，其 `episodes` 已使用与原目录相同的稳定章节 URL。
+接口要求全量重建时返回 `reset:true`，插件返回 `null` 交给宿主重新加载。
 
-```csharp
-Task<BookDetail?> UpdateEpisodesAsync(string bookUrl, IReadOnlyList<Episode> known, CancellationToken ct);
+```js
+// GUIDE_EXAMPLE: incremental-update
+function GuideIncrementalUpdate(bookUrl, known) {
+  known = known || [];
+  if (!known.length) return null;
+  var last = known[known.length - 1].url;
+  var data = this.host.getJson('https://api.example.invalid/updates?book=' +
+    encodeURIComponent(bookUrl) + '&after=' + encodeURIComponent(last));
+  if (data.reset === true || !Array.isArray(data.episodes)) return null;
+  var merged = known.slice(), seen = {};
+  known.forEach(function (episode) { seen[episode.url] = true; });
+  data.episodes.forEach(function (episode) {
+    if (!episode.url || seen[episode.url]) return;
+    seen[episode.url] = true;
+    merged.push(episode);
+  });
+  return { episodes: merged };
+}
+// 在源对象中设置：updateEpisodes: GuideIncrementalUpdate
 ```
-
-- `known` 是缓存的章节，按网站原始顺序（用户开了“倒序”也会先翻回来）；
-- 返回包含完整章节列表的 `BookDetail`；返回 `null` 表示无法增量更新，宿主会退回整本加载。
-
-常见做法：先看详情页上的“最新章节”能否和缓存接上，能接上就只追加新章节；接不上（更新太多，或者上次没加载完整）就从缓存断开的那一页接着加载，不从头来。示例见 `XiaoaiTing2.cs`。
 
 ### 访问频率限制
 
-部分网站对访问频率限制很严，返回 HTTP 429（请求过于频繁）后会封一段时间，封禁期间继续请求可能延长封禁。逐页加载时：
+部分网站返回 HTTP 429 后会封一段时间。逐页加载时页与页之间用 `host.sleep` 留出间隔；遇到 429（`e.status === 429`）等一段时间再试，
+重试几次仍不行就先返回已加载的部分并用 `host.toast` 说明，配合 `updateEpisodes` 让下次接着加载。
 
-- 页与页之间留出间隔，不要并发；
-- 遇到 429 等一段时间再试，重试几次仍不行就先返回已加载的部分并用 `Host.Toast` 说明，配合 `IIncrementalEpisodes` 让下次接着加载；
-- 调试时注意控制请求次数，测试多了自己会先被封。
+## 7. HTML 与 JSON 辅助
 
-## 7. HTML 与 JSON 帮助方法
-
-HTML（AngleSharp 的扩展方法）：
+HTML 元素（`getHtml` / `parseHtml` 的返回值，以及 `select` 出来的每一项）：
 
 | 方法 | 说明 |
 |---|---|
-| `Select(selector)` / `SelectFirst(selector)` | 查找所有 / 第一个元素（CSS 选择器） |
-| `Text()` | 去掉首尾空白、合并连续空白的文本；元素为 null 时返回空字符串 |
-| `OwnText()` | 只取元素自身的文本，不含子元素 |
-| `Attr(name)` | 读取属性，不存在时返回空字符串 |
-| `AbsUrl(name)` | 读取属性并转成绝对地址 |
+| `select(selector)` | 查找所有元素（CSS 选择器），返回普通的 JS 数组，可以 `map` / `filter` / `forEach` |
+| `first(selector)` | 查找第一个元素。找不到时返回一个“空元素”，可以继续调用下面的方法 |
+| `exists()` | 元素是否存在 |
+| `text()` / `ownText()` | 去掉首尾空白、合并连续空白的文本 / 只取元素自身的文本 |
+| `attr(name)` / `absUrl(name)` | 读取属性 / 读取属性并转成绝对地址，不存在返回空字符串 |
+| `html()` / `outerHtml()` / `tag()` / `hasClass(name)` | 内部 HTML / 完整 HTML / 标签名 / 是否有某个 class |
+| `children()` / `parent()` / `byId(id)` | 子元素数组 / 父元素 / 按 id 在整个文档里找 |
 
-`Text()`、`OwnText()`、`Attr()`、`AbsUrl()` 可以在 null 上调用，返回空字符串，所以 `doc.SelectFirst(".intro").Text()` 不需要判空。
+所以 `doc.first('.intro').text()` 不需要判空。
 
-JSON（`System.Text.Json.Nodes.JsonNode` 的扩展方法），路径用点分隔，数组下标直接写数字：
+JSON 用全局函数读取，路径用点分隔，数组下标直接写数字：
 
-```csharp
-var json = await Host.GetJsonAsync(url, ct: ct);
-var name = json.Str("data.list.0.name");
-var count = json.Int("data.total");
-foreach (var item in json.Items("data.list")) { ... }
+```js
+var json = this.host.getJson(url);
+var name = str(json, 'data.list.0.name');   // 字符串，不存在返回 ''
+var count = int(json, 'data.total', 0);      // 整数
+items(json, 'data.list').forEach(function (item) { /* ... */ });   // 数组，不存在返回 []
+at(json, 'data.pageQuery');                  // 任意节点，不存在返回 null
 ```
+
+另有 `regexInt(文本, /正则(\d+)/, 默认值)` 和 `parseJson(text)`。
 
 ## 8. 调试
 
-- “插件”页展开一个源，点“测试”：依次测试分类、搜索、详情和音频解析，结果和 `Host.Log` 的输出都在调试日志里；
-- 修改插件后在插件页面重新导入即可。宿主从内存加载 DLL，不会锁定文件；不过已经加载的程序集要重启程序才会被替换。
+- **在 Android 源码工程中测试**：`./gradlew testDebugUnitTest -Donline=true` 会加载 `plugins/ShunSources`，逐个源测试分类、搜索、详情和音频解析，
+  结果在 `app/build/plugin-report.txt`；加 `-Dsources=哔哩哔哩,酷我畅听` 只跑指定的源。需要 WebView 的音频解析应在目标端应用的实际环境中验证。
+- **在应用中**：插件页面点开一个源 →“测试”，结果和 `host.log` 的输出都在“日志”里。
 
-## 9. 打包与安装
+## 9. 打包
 
-- 单个 dll：在“插件”页点“导入 → 从文件导入”直接选择；
-- 有其它依赖：把插件 dll 和依赖放在同一个目录，打成 `MySources.zip` 导入（zip 内可以有一层同名目录）；
-- 也可以用“从网址导入”，填 .dll 或 .zip 的下载地址。
+以下命令在 Android 源码工程中执行；也可直接用 ZIP 工具打包四端通用插件。
 
-导入后的位置：`%AppData%\TingShu\plugins\MySources\MySources.dll`（便携模式为程序目录下 `data\plugins`）。宿主加载插件目录下的 dll，以及每个子目录中与目录同名的 dll，其余 dll 视为依赖。
+```bash
+./gradlew packPlugins
+```
 
-在“插件包”里点删除会移除整个插件和它包含的所有源（DLL 插件要重启后才彻底移除）；只想停用某个源，关掉它的开关即可。
+会把 `plugins/` 下的每个目录打成 `plugins/dist/<名字>.zip`。也可以直接用任意压缩软件把 `manifest.json` 和脚本压成 zip。
 
 ## 10. 安全提示
 
-DLL 插件是普通 .NET 代码，拥有与本程序相同的权限。**只安装你信任的来源提供的 DLL 插件**。
+插件脚本运行在受限环境里（不能访问 Java 类和文件系统），但它可以访问网络、读取 App 内网页的 Cookie。**只导入你信任的来源提供的插件**。
+
+## MCP 局域网开发
+
+安卓、iOS 与 Mac 可在“设置 → MCP 插件开发”中开启 MCP 服务，让 AI 制作草稿、调用目标设备实际引擎测试、安装并导出 ZIP。
+通过 MCP 制作和导出的 ZIP 同样可用于 Android、iOS、Mac、Windows 四端。网络、WebView 和播放行为应在目标端验证。
+### MCP 实际调用示例
+
+以下是工具名称及对应参数。按顺序调用；`plugin_write.files` 必须包含草稿的全部文件，
+不是补丁。下面是可离线校验和测试分类方法的最小草稿，音频地址为教学占位地址：
+
+`plugin_write`：
+
+```json
+{
+  "id": "guide-demo",
+  "files": {
+    "manifest.json": "{\"name\":\"GuideDemo\",\"version\":\"1.0.0\",\"scripts\":[\"source.js\"]}",
+    "source.js": "registerSource({id:'9fe2b5b492004a3fbd2e9ce1db72576c',name:'最小示例',categoryMenus:function(){return [{title:'分类',tabs:[{title:'示例',url:'demo:books'}]}];},categoryPage:function(){return {books:[{title:'示例书',bookUrl:'demo:book:1'}],currentPage:1,totalPage:1};},bookDetail:function(url,loadEpisodes){return {episodes:loadEpisodes?[{title:'第一集',url:'https://audio.example.invalid/1.mp3'}]:[]};},audio:function(url){return url;}});"
+  }
+}
+```
+
+`plugin_validate`：
+
+```json
+{"id":"guide-demo"}
+```
+
+`plugin_test`：
+
+```json
+{"id":"guide-demo","sourceId":"9fe2b5b492004a3fbd2e9ce1db72576c","method":"categoryMenus","arguments":[]}
+```
+
+```json
+{"id":"guide-demo","sourceId":"9fe2b5b492004a3fbd2e9ce1db72576c","method":"bookDetail","arguments":["demo:book:1",true,true]}
+```
+
+```json
+{"id":"guide-demo","sourceId":"9fe2b5b492004a3fbd2e9ce1db72576c","method":"audio","arguments":["https://audio.example.invalid/1.mp3"]}
+```
+
+实际网站的请求、目录、音频数据均验证通过后，可调用 `plugin_install`：
+
+```json
+{"id":"guide-demo"}
+```
+
+`plugin_export` 导出草稿：
+
+```json
+{"id":"guide-demo","target":"draft"}
+```
+
+工具结果的 `value.base64` 解码后是 ZIP。安装需要应用允许远程安装；测试调用不等于播放验证。
+草稿偏好与正式插件隔离，每次 `plugin_test` 都重新加载草稿，不要依赖上一次测试留下的全局变量。

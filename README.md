@@ -12,7 +12,7 @@
 | 文件 | 适用 |
 |---|---|
 | [ssts-mac-5.4.dmg](https://github.com/whykang/ssts/releases/download/v5.4/ssts-mac-5.4.dmg) | Mac 版 5.4（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
-| [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Windows 版、Mac 版通用，和安卓、iOS 也通用） |
+| [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Android / iOS / Mac / Windows 四端通用） |
 | [ssts-5.4.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x64.zip) | Windows 版 5.4：绝大多数电脑（64 位 Windows 10 / 11） |
 | [ssts-5.4.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x86.zip) | Windows 版 5.4：32 位旧电脑 |
 | [ssts-5.4.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-arm64.zip) | Windows 版 5.4：ARM 笔记本 |
@@ -50,7 +50,6 @@ Windows 版更新详见 [v5.4 发布说明](https://github.com/whykang/ssts/rele
 
 - **通用插件**：程序本身不带任何听书源，所有源都来自导入的插件，一个插件可以包含多个源（[开发指南](docs/plugin-development.md)）
   - **脚本插件**：一个 zip 包，里面是 `manifest.json` 和 JavaScript 脚本，用文本编辑器就能写，导入后立即生效
-  - **DLL 插件**：C# 编写，引用 TingShu.Sdk 继承 SourceBase；全部听书源都打包在 `ShunSources.Plugin` 这一个插件里
   - 支持从文件 / 网址导入，或者把 zip 直接拖进“插件”页；可以启用、禁用、排序、登录，以及一键测试和调试日志
 - **广播电台**：云听、全球电台通过插件提供；内置“我的电台”，可以自己添加电台（名称 + 直播流地址，还可以选一张图片做图标）
 - **网盘**：内置夸克网盘、百度网盘、阿里云盘、115 网盘和 WebDAV（可以连自己的 NAS）。在“设置 → 网盘”里开启并登录成功后，才会出现在“插件”和“发现”里；每个文件夹是一本书，里面的音频是章节，可以指定只看某个目录
@@ -73,9 +72,9 @@ Windows 快捷键：`空格` 播放/暂停 · `←/→` 快退/快进 · `Ctrl+�
 
 📖 **[插件开发指南](docs/plugin-development.md)**
 
-插件有两种写法，可以同时安装：
+Android、iOS、Mac 和 Windows 使用同一套 JavaScript 插件格式与接口，同一个 ZIP 插件包可在四端导入。
 
-**脚本插件（推荐）**：一个 zip 包，里面是 `manifest.json` 和若干 `.js`，不需要开发环境。
+**四端通用插件**：一个 zip 包，里面是 `manifest.json` 和若干 `.js`，不需要开发环境。
 
 ```json
 { "name": "MySources", "version": "1.0.0", "author": "作者名", "scripts": ["sites.js"] }
@@ -108,14 +107,13 @@ registerSource({
 
 把这两个文件压缩成 zip，在程序的“插件”页导入（或直接拖进去）即可。程序内置的广播电台就是用同样的方式写的。
 
-**DLL 插件**：新建一个 .NET 8 类库，引用 `TingShu.Sdk`，继承 `SourceBase` 实现搜索、分类、详情和音频提取，编译出的 dll 在“插件”页导入。完整示例见 [sources/ShunSources.Plugin](sources/ShunSources.Plugin)。
 
 指南包括：
 
-- 脚本插件：插件包的结构、源的属性和方法、宿主提供的网络请求 / WebView / 配置 / 缓存、HTML 与 JSON 帮助方法
-- DLL 插件：创建项目、6 种音频提取方式（直链、HTML、JSON、WebView 渲染、WebView 嗅探、自定义）
+- 四端通用的 ZIP 插件结构、源的属性和方法、宿主提供的网络请求 / WebView / 配置 / 缓存、HTML 与 JSON 帮助方法
 - 登录、搜索验证、设置项、增量更新章节等可选功能
 - 分页章节、访问频率限制的处理，调试、打包与安装
+- 正文内嵌完整书籍源、电台直播与回听按日期/时间排序、音频解析、搜索验证和 MCP 调用示例，方便 AI 直接读取
 
 ## 目录结构
 
@@ -128,9 +126,6 @@ tingshu.sln
 │  ├─ ViewModels/  Views/    界面（MVVM）
 │  ├─ Controls/  Themes/     自定义控件、浅色/深色主题与控件样式
 │  └─ Properties/PublishProfiles/   win-x64 / win-x86 / win-arm64 发布配置
-├─ TingShu.Sdk/              插件 SDK（SourceBase、AudioExtractor、ISourceHost……）
-├─ sources/
-│  └─ ShunSources.Plugin/    听书源插件（全部源，单个 DLL）
 └─ docs/                     插件开发文档
 ```
 
@@ -154,13 +149,8 @@ dotnet run --project tingshu
 dotnet publish tingshu -p:PublishProfile=win-x64
 ```
 
-输出在 `publish/win-x64/`，包括 `TingShu.exe`（约 64 MB，自带运行时）、`docs/`，以及给插件开发者用的 `sdk/`。
+输出在 `publish/win-x64/`，包括 `TingShu.exe`（约 64 MB，自带运行时）、`docs/`。
 
-单独编译源插件，得到 `sources/ShunSources.Plugin/bin/Release/net8.0/ShunSources.Plugin.dll`，在程序的“插件”页导入：
-
-```bash
-dotnet build sources/ShunSources.Plugin -c Release
-```
 32 位旧电脑用 `win-x86`，ARM 笔记本用 `win-arm64`。
 
 运行环境：Windows 10 1607 及以上 / Windows 11。WebView 类插件需要 [WebView2 运行时](https://developer.microsoft.com/microsoft-edge/webview2/)（Windows 11 和大多数 Windows 10 已自带），没有它不影响其它功能。
