@@ -24,6 +24,10 @@
 | Windows x86 | [ssts-5.6.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x86.zip) |
 | Windows ARM64 | [ssts-5.6.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-arm64.zip) |
 
+| 插件合集 5.6（38 个源，四端通用） | [Sources-v5.6.zip](https://github.com/whykang/ssts/releases/download/v5.6/Sources-v5.6.zip) |
+
+插件国内导入直链：<https://gitee.com/whykan/ssxz/raw/master/Sources-v5.6.zip>
+
 ## 安装与使用
 
 - Windows 解压后运行“随身听书.exe”，自带运行时。升级前请先从托盘退出旧程序。

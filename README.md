@@ -12,7 +12,7 @@ Windows 和 Mac 最新版本：**v5.6**（[全部版本和更新说明](https://
 | 文件 | 适用 |
 |---|---|
 | [ssts-mac-5.6.dmg](https://github.com/whykang/ssts/releases/download/v5.6/ssts-mac-5.6.dmg) | Mac 版 5.6（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
-| [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Android / iOS / Mac / Windows 四端通用） |
+| [Sources-v5.6.zip](https://github.com/whykang/ssts/releases/download/v5.6/Sources-v5.6.zip) | 听书源插件 5.6（38 个源，Android / iOS / Mac / Windows 四端通用） |
 | [ssts-5.6.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x64.zip) | Windows 版 5.6：绝大多数电脑（64 位 Windows 10 / 11） |
 | [ssts-5.6.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x86.zip) | Windows 版 5.6：32 位旧电脑 |
 | [ssts-5.6.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-arm64.zip) | Windows 版 5.6：ARM 笔记本 |
@@ -20,7 +20,7 @@ Windows 和 Mac 最新版本：**v5.6**（[全部版本和更新说明](https://
 1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
    Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
 2. 程序本身不带任何听书源：下载上面的插件包（不用解压），在程序的“插件”页点“导入”选择它，或者直接把它拖进“插件”页。
-   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.4.zip`
+   也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.6.zip`
 
 ## 近期更新
 
