@@ -7,11 +7,11 @@
 
 ## 下载
 
-Windows 最新版本：**v5.6**；Mac 安装包保留当前已发布的 **v5.4**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
+Windows 和 Mac 最新版本：**v5.6**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
 
 | 文件 | 适用 |
 |---|---|
-| [ssts-mac-5.4.dmg](https://github.com/whykang/ssts/releases/download/v5.4/ssts-mac-5.4.dmg) | Mac 版 5.4（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
+| [ssts-mac-5.6.dmg](https://github.com/whykang/ssts/releases/download/v5.6/ssts-mac-5.6.dmg) | Mac 版 5.6（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
 | [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Android / iOS / Mac / Windows 四端通用） |
 | [ssts-5.6.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x64.zip) | Windows 版 5.6：绝大多数电脑（64 位 Windows 10 / 11） |
 | [ssts-5.6.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x86.zip) | Windows 版 5.6：32 位旧电脑 |
@@ -24,7 +24,7 @@ Windows 最新版本：**v5.6**；Mac 安装包保留当前已发布的 **v5.4**
 
 ## 近期更新
 
-以下合并记录 Windows 与 Mac 近期更新，具体功能以所用版本为准；Mac 安装包保留下载区已有版本。
+以下合并记录 Windows 与 Mac 近期更新，具体功能以所用版本为准；Windows 与 Mac 安装包均已更新至 5.6。
 
 - 新增 MCP 插件开发：创建草稿、校验、测试、安装、备份恢复和导出；采用四端通用 JavaScript 插件 API 指南，包含完整书籍源、电台、搜索验证与增量更新示例。
 - 插件云同步支持安装、更新和删除。Windows 与最新 Mac 使用相同的事件与删除屏障协议，防止旧设备重新传回已删除插件；手动重新安装后可恢复同步，变更记录按 WebDAV 账号隔离。
