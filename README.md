@@ -7,30 +7,39 @@
 
 ## 下载
 
-最新版本：**v5.4**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
+Windows 最新版本：**v5.6**；Mac 安装包保留当前已发布的 **v5.4**（[全部版本和更新说明](https://github.com/whykang/ssts/releases)）
 
 | 文件 | 适用 |
 |---|---|
 | [ssts-mac-5.4.dmg](https://github.com/whykang/ssts/releases/download/v5.4/ssts-mac-5.4.dmg) | Mac 版 5.4（Apple 芯片和 Intel 通用，macOS 14.6 及以上） |
 | [Sources-v5.4.zip](https://github.com/whykang/ssts/releases/download/v5.4/Sources-v5.4.zip) | 听书源插件 5.4（Android / iOS / Mac / Windows 四端通用） |
-| [ssts-5.4.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x64.zip) | Windows 版 5.4：绝大多数电脑（64 位 Windows 10 / 11） |
-| [ssts-5.4.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-x86.zip) | Windows 版 5.4：32 位旧电脑 |
-| [ssts-5.4.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.4/ssts-5.4.0-win-arm64.zip) | Windows 版 5.4：ARM 笔记本 |
+| [ssts-5.6.0-win-x64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x64.zip) | Windows 版 5.6：绝大多数电脑（64 位 Windows 10 / 11） |
+| [ssts-5.6.0-win-x86.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-x86.zip) | Windows 版 5.6：32 位旧电脑 |
+| [ssts-5.6.0-win-arm64.zip](https://github.com/whykang/ssts/releases/download/v5.6/ssts-5.6.0-win-arm64.zip) | Windows 版 5.6：ARM 笔记本 |
 
 1. Windows：下载程序，解压后直接运行“随身听书.exe”，不需要安装其它东西。
    Mac：打开 dmg，把“随身听书”拖进“应用程序”；第一次打开如果被系统拦住，在“系统设置 → 隐私与安全性”里点“仍要打开”。
 2. 程序本身不带任何听书源：下载上面的插件包（不用解压），在程序的“插件”页点“导入”选择它，或者直接把它拖进“插件”页。
    也可以在“插件”页从网址导入：`https://gitee.com/whykan/ssxz/raw/master/Sources-v5.4.zip`
 
-**Mac 版 5.4**：
+## 近期更新
 
-- 支持自定义全局快捷键：播放 / 暂停、上下集、快进快退、显示 / 隐藏窗口；窗口关闭后也能使用。
-- 本地文件和网盘支持按书名自动补全封面。
-- 支持逐集进度记忆，切回听过的章节可以继续上次的位置。
-- 支持书签汇总、自动预缓存、云同步和系统媒体键控制。
-- 内置电台保留“我的电台”；云听和全球电台通过 5.4 插件包导入。
+以下合并记录 Windows 与 Mac 近期更新，具体功能以所用版本为准；Mac 安装包保留下载区已有版本。
 
-Windows 版更新详见 [v5.4 发布说明](https://github.com/whykang/ssts/releases/tag/v5.4)。
+- 新增 MCP 插件开发：创建草稿、校验、测试、安装、备份恢复和导出；采用四端通用 JavaScript 插件 API 指南，包含完整书籍源、电台、搜索验证与增量更新示例。
+- 插件云同步支持安装、更新和删除。Windows 与最新 Mac 使用相同的事件与删除屏障协议，防止旧设备重新传回已删除插件；手动重新安装后可恢复同步，变更记录按 WebDAV 账号隔离。
+- 支持手动搜索或选择本地封面、恢复来源封面，手动封面参加云同步；修复网盘目录已有图片却无法读取的问题，并保留图片鉴权信息。
+- 支持逐集精确进度与“已听完”状态同步；已听完章节可从头重听，书签仍按精确位置跳转。
+- 新增手动连载／完本状态；完本书优先读取章节缓存，仍可手动刷新。
+- 播放页可直接查看目录、筛选和定位章节、切集与加入书架；广播回听支持按日期分组，直播单独显示。
+- 优化睡眠定时，增加 5 分钟预设、自定义小时和分钟；修复定时面板内容裁切和无法滚动的问题。
+- 优化搜索验证：读取真实网页结果，无法识别时由用户手动完成并仅重搜一次，避免反复搜索。
+- 优化后台刷新、隐藏及锁屏时的进度保存，以及章节缓存并发写入。
+- 改进设置、目录、书架状态与移出确认界面；播放页右上角直接打开书籍详情。
+
+保留自动预缓存，不新增手动音频下载功能。程序包仅包含程序，不包含源码、用户数据或插件包。
+
+[查看 v5.6 发布说明](https://github.com/whykang/ssts/releases/tag/v5.6)
 
 ## 界面预览
 
